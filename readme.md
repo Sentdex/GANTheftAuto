@@ -3,9 +3,9 @@
 PyTorch code for GameGAN
 
 <div>
-<img src="./assets/pacman_bandai_small.gif" width="280px" height="280px" style="float:left;">
-<img src="./assets/pacman_single.gif" width="280px" height="280px" style="float:left;">
-<img src="./assets/vizdoom_small.gif" width="280px" height="280px">
+<img src="./assets/pacman_bandai_small.gif" width="240px" height="240px" style="float:left;">
+<img src="./assets/pacman_single.gif" width="240px" height="240px" style="float:left;">
+<img src="./assets/vizdoom_small.gif" width="240px" height="240px">
 </div>
 
 **Learning to Simulate Dynamic Environments with GameGAN**  
