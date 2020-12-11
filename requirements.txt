@@ -1,0 +1,4 @@
+torch==1.4.0
+opencv-python
+torchvision==0.5.0
+tensorboardX
