@@ -60,6 +60,9 @@ python dataloader.py DOOMRNN_DIR/vizdoom_skip3 vizdoom
 
 For custom datasets, you can construct .npy files that contain a sequence of image and action pairs and define a dataloader similar to 'class vizdoom_dataset'. Please refer to 'data/dataloder.py'.
 
+-- The above repository is deprecated and VizDoom environment might not run correctly in certain systems. In that case, you can use the docker installtaion of https://github.com/zacwellmer/WorldModels and copy the extraction scripts in the docker environment. 
+
+
 ## Training
 We provide training scripts in './scripts'.
 
