@@ -3,9 +3,9 @@
 PyTorch code for GameGAN
 
 <div>
-<img src="./assets/pacman_bandai_small.gif" width="280px" height="280px" style="float:left;">
-<img src="./assets/pacman_single.gif" width="280px" height="280px" style="float:left;">
-<img src="./assets/vizdoom_small.gif" width="280px" height="280px">
+<img src="./assets/pacman_bandai_small.gif" width="240px" height="240px" style="float:left;">
+<img src="./assets/pacman_single.gif" width="240px" height="240px" style="float:left;">
+<img src="./assets/vizdoom_small.gif" width="240px" height="240px">
 </div>
 
 **Learning to Simulate Dynamic Environments with GameGAN**  
@@ -59,6 +59,9 @@ python dataloader.py DOOMRNN_DIR/vizdoom_skip3 vizdoom
 - You should now see .npy files extracted in 'data/vizdoom' directory.
 
 For custom datasets, you can construct .npy files that contain a sequence of image and action pairs and define a dataloader similar to 'class vizdoom_dataset'. Please refer to 'data/dataloder.py'.
+
+-- The above repository is deprecated and VizDoom environment might not run correctly in certain systems. In that case, you can use the docker installtaion of https://github.com/zacwellmer/WorldModels and copy the extraction scripts in the docker environment. 
+
 
 ## Training
 We provide training scripts in './scripts'.
