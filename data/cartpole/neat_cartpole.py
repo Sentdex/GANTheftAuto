@@ -234,6 +234,10 @@ if __name__ == '__main__':
     # Data folder
     os.makedirs('data', exist_ok=True)
 
+    # Set process spawn methid to "spawn"
+    # gym does not work on Linux otherwise
+    multiprocessing.set_start_method('spawn')
+
     # Create a list of sequential numbers in range of 1 to how many samples we'll save
     # which we'll use as filenames.
     # Shuffle it to shuffle saved samples
