@@ -216,15 +216,18 @@ class cartpole_dataset(data_utils.Dataset):
         self.permute_color = permute_color
 
         self.samples = []
-        num_data = len(os.listdir(datadir))
+        files = os.listdir(datadir)
+        num_data = len(files)
         if set_type == 0:
-            sample_list = list(range(0, int(num_data * 0.9)))
+            sample_list = files[:int(num_data * 0.9)]
         else:
-            sample_list = list(range(int(num_data * 0.9), num_data))
+            sample_list = files[int(num_data * 0.9):]
 
-        # Here's teh difference - we're using gzipped pickle
-        for el in sample_list:
-            self.samples.append('%s/%d.pickle.gz' % (datadir, el))
+        # Here's the difference - we're using gzipped pickle
+        # (additionally checking if teh file exists)
+        for file in sample_list:
+            path = f'{datadir}/{file}'
+            self.samples.append(path)
 
         # Bias
         self.end_bias = self.opts.end_bias if utils.check_arg(self.opts, 'end_bias') else 0.5
