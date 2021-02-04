@@ -21,6 +21,12 @@ import dataloader
 import copy
 
 
+# Workaround for PyTorch issue on Windows
+if os.name == 'nt':
+    import ctypes
+    ctypes.cdll.LoadLibrary('caffe2_nvrtc.dll')
+
+
 def setup(rank, world_size, seed):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12355'
