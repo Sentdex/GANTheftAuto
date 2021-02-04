@@ -247,7 +247,9 @@ class cartpole_dataset(data_utils.Dataset):
 
         # Using bias, decide if to draw a random subsequence from the whole dataset
         # or from the end (when probably model fails)
-        if random.random() < self.end_bias:
+        if ep_len <= 1:
+            start_pt = 0
+        elif random.random() < self.end_bias:
             start_pt = random.randint(max(0, ep_len - self.opts.num_steps*2), ep_len - 1)
         else:
             start_pt = random.randint(0, ep_len - 1)
