@@ -62,7 +62,7 @@ class ActionLSTM(nn.Module):
         tmp = v + state_bias
 
         # activations
-        g_t = tmp[:, 2 * self.hidden_siz:3 * self.hidden_size].tanh()
+        g_t = tmp[:, 2 * self.hidden_size:3 * self.hidden_size].tanh()
         i_t = tmp[:, :self.hidden_size].sigmoid()
         f_t = tmp[:, self.hidden_size:2 * self.hidden_size].sigmoid()
         o_t = tmp[:, -self.hidden_size:].sigmoid()
