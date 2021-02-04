@@ -9,6 +9,9 @@ import numpy as np
 import torch.utils.data as data_utils
 import cv2
 import random
+import pickle
+import gzip
+
 
 sys.path.insert(0, './data')
 sys.path.append('../../')
@@ -28,6 +31,8 @@ def get_custom_dataset(opts=None, set_type=0, force_noshuffle=False, getLoader=T
         dataset = berkeley_pacman_dataset(opts, set_type=set_type, datadir=datadir)
     elif 'vizdoom' == curdata:
         dataset = vizdoom_dataset(opts,set_type=set_type, datadir=datadir)
+    elif 'cartpole' == curdata:
+        dataset = cartpole_dataset(opts, set_type=set_type, datadir=datadir)
     else:
         print('Unsupported Dataset')
         exit(-1)
@@ -199,6 +204,86 @@ def cp_vizdoom_data(data_dir, out_dir):
         for cur_f in os.listdir(cur_dir):
             shutil.copyfile(os.path.join(cur_dir, cur_f), os.path.join(out_dir, str(i)+'.npy'))
             i += 1
+
+# Custom, cartpole data loader
+class cartpole_dataset(data_utils.Dataset):
+
+    # Initialization, almost teh same as for other data types
+    def __init__(self, opts, set_type=0, permute_color=False, datadir=''):
+
+        self.opts = opts
+        self.set_type = set_type
+        self.permute_color = permute_color
+
+        self.samples = []
+        num_data = len(os.listdir(datadir))
+        if set_type == 0:
+            sample_list = list(range(0, int(num_data * 0.9)))
+        else:
+            sample_list = list(range(int(num_data * 0.9), num_data))
+
+        # Here's teh difference - we're using gzipped pickle
+        for el in sample_list:
+            self.samples.append('%s/%d.pickle.gz' % (datadir, el))
+
+        # Bias
+        self.end_bias = self.opts.end_bias if utils.check_arg(self.opts, 'end_bias') else 0.5
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+
+        # Load the sequence
+        with gzip.open(self.samples[idx], 'rb') as f:
+            data = pickle.load(f)
+
+        # Initialize data lists and calculate the episode length
+        states, actions, neg_actions = [], [], []
+        ep_len = len(data['observations']) - self.opts.num_steps
+
+        # Using bias, decide if to draw a random subsequence from the whole dataset
+        # or from the end (when probably model fails)
+        if random.random() < self.end_bias:
+            start_pt = random.randint(max(0, ep_len - self.opts.num_steps*2), ep_len - 1)
+        else:
+            start_pt = random.randint(0, ep_len - 1)
+
+        i = 0
+        samples = []
+        cur_sample = 0
+
+        # Iterate over num_steps steps
+        while i < self.opts.num_steps:
+
+            # If current index exceedes number of steps - use last step
+            if start_pt + i >= len(data['observations']):
+                cur_s = data['observations'][len(data['observations']) - 1]
+                cur_a = data['actions'][len(data['observations']) - 1]
+            # Or given step otherwise
+            else:
+                cur_s = data['observations'][start_pt + i]
+                cur_a = data['actions'][start_pt + i]
+
+            # Channels last -> channels first, scale to -1..1, save as float32
+            s_t = (np.transpose(cur_s, axes=(2, 0, 1)) / 255.).astype('float32')
+            s_t = (s_t - 0.5) / 0.5
+
+            # Code sparse label as one-hot vector
+            a_t = np.eye(2)[cur_a].astype('float32')
+
+            # Since we have just 2 actions, false action is always the other one
+            false_a_t = np.eye(2)[1-cur_a].astype('float32')
+
+            # Add to the lists
+            states.append(s_t)
+            actions.append(a_t)
+            neg_actions.append(false_a_t)
+            samples.append(cur_sample)
+            i = i + 1
+
+        # Return data
+        return states, actions, neg_actions
 
 if __name__ == '__main__':
     data_dir = sys.argv[1]
