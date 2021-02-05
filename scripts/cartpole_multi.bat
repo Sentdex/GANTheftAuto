@@ -13,7 +13,7 @@ python main_parallel.py ^
  --alpha_loss_multiplier 0.000075 ^
  --softmax_kernel ^
  --sigmoid_maps ^
- --save_epoch 5 ^
+ --save_epoch 1 ^
  --rev_multiply_map ^
  --num_gpu 1 ^
  --temperature 0.1 ^
