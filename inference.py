@@ -90,7 +90,7 @@ def inference(gpu, opts):
     # Show the image
     img = prev_state[0].cpu().numpy()
     img = np.rollaxis(img, 0, 3)
-    img = cv2.resize(img, (400, 600), interpolation=cv2.INTER_NEAREST)
+    img = cv2.resize(img, (600, 400), interpolation=cv2.INTER_NEAREST)
     cv2.imshow('test', img[...,::-1])
     cv2.waitKey(0)
 
@@ -108,7 +108,7 @@ def inference(gpu, opts):
         # Show the image
         img = prev_state[0].cpu().numpy()
         img = np.rollaxis(img, 0, 3)
-        img = cv2.resize(img, (400, 600), interpolation=cv2.INTER_NEAREST)
+        img = cv2.resize(img, (600, 400), interpolation=cv2.INTER_NEAREST)
         cv2.imshow('test', img[...,::-1])
         cv2.waitKey(1)
 
