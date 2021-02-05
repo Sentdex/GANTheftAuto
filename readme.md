@@ -47,9 +47,9 @@ tensorboard --logdir=./results
 
 ## Inference
 Inference is currently unfinished - can be ran, but actions are randomly generated instead of taken from the user input. We'll finish it up shortly.
-Edit `scripts/cartpole_multi.sh` and update the model filename, then run:
+Edit `scripts/cartpole_inference.sh` and update the model filename, then run:
 ```
-./scripts/cartpole_multi.sh
+./scripts/cartpole_inference.sh
 ```
 
 ------
