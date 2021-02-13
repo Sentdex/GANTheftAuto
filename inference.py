@@ -16,6 +16,7 @@ import dataloader
 import copy
 import cv2
 import numpy as np
+#import win32api
 
 
 # Workaround for PyTorch issue on Windows
@@ -37,11 +38,18 @@ def inference(gpu, opts):
 
     # Load teh model
     saved_model = torch.load(opts.saved_model, map_location='cpu')
-    #saved_optim = torch.load(opts.saved_optim, map_location='cpu')
     opts = saved_model['opts']
     opts.gpu = gpu
     opts.log_dir = log_dir
     warm_up = opts.warm_up
+
+    curdata, datadir = opts.data.split(':')
+    if curdata == 'cartpole':
+        resized_image_size = (600, 400)
+    elif curdata == 'vroom':
+        resized_image_size = (256, 256)
+    else:
+        raise Exception(f'Not implemented: unknown data type: {curdata}')
 
     # Initialize torch
     torch.manual_seed(opts.seed)
@@ -72,7 +80,7 @@ def inference(gpu, opts):
     netG.eval()
 
     ##!! Temporary actions, replace with actual keys later
-    gen_actions = [torch.tensor([np.eye(2)[random.randint(0, 1)]], dtype=torch.float32).cuda() for _ in range(1600)]
+    gen_actions = [torch.tensor([np.eye(opts.action_space)[random.randint(0, 1)]], dtype=torch.float32).cuda() for _ in range(1600)]
 
     # Disable warmup
     warm_up = 0
@@ -90,16 +98,30 @@ def inference(gpu, opts):
     # Show the image
     img = prev_state[0].cpu().numpy()
     img = np.rollaxis(img, 0, 3)
-    img = cv2.resize(img, (600, 400), interpolation=cv2.INTER_NEAREST)
+    img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
     cv2.imshow('test', img[...,::-1])
-    cv2.waitKey(0)
+    cv2.waitKey(1000)
 
     # Uncomment to wite to the video stream
     #for _ in range(30):
     #    v.write((img*255).astype(np.uint8))
 
+    action = None
+    torch.tensor([np.eye(opts.action_space)[random.randint(0, opts.action_space - 1)]], dtype=torch.float32).cuda()
+
     # Generate 160 frames
-    for i in range(160):
+    i = 0
+    while True:
+
+        '''
+        if win32api.GetAsyncKeyState(ord('A')):
+            action = torch.tensor([[1, 0]], dtype=torch.float32).cuda()
+        elif win32api.GetAsyncKeyState(ord('D')):
+            action = torch.tensor([[0, 1]], dtype=torch.float32).cuda()
+        elif action is None:
+            action = torch.tensor([np.eye(2)[random.randint(0, 1)]], dtype=torch.float32).cuda()
+        print(action)
+        '''
 
         # Perform inference
         prev_state, m, prev_alpha, alpha_loss, z, M, prev_read_v, h, c, init_map, base_imgs, _, cur_hidden = netG.run_step(prev_state, h, c, gen_actions[i], \
@@ -108,9 +130,11 @@ def inference(gpu, opts):
         # Show the image
         img = prev_state[0].cpu().numpy()
         img = np.rollaxis(img, 0, 3)
-        img = cv2.resize(img, (600, 400), interpolation=cv2.INTER_NEAREST)
+        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
         cv2.imshow('test', img[...,::-1])
         cv2.waitKey(1)
+
+        i += 1
 
         # Uncomment to wite to the video stream
         #v.write((img*255).astype(np.uint8))
