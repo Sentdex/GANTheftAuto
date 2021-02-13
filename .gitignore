@@ -4,3 +4,7 @@ __pycache__/
 data/cartpole/data/
 
 results/
+
+data/vroom/data/
+
+data/vroom/data_/
