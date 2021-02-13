@@ -33,6 +33,8 @@ def get_custom_dataset(opts=None, set_type=0, force_noshuffle=False, getLoader=T
         dataset = vizdoom_dataset(opts,set_type=set_type, datadir=datadir)
     elif 'cartpole' == curdata:
         dataset = cartpole_dataset(opts, set_type=set_type, datadir=datadir)
+    elif 'vroom' == curdata:
+        dataset = vroom_dataset(opts, set_type=set_type, datadir=datadir)
     else:
         print('Unsupported Dataset')
         exit(-1)
@@ -279,6 +281,87 @@ class cartpole_dataset(data_utils.Dataset):
 
             # Since we have just 2 actions, false action is always the other one
             false_a_t = np.eye(2)[1-cur_a].astype('float32')
+
+            # Add to the lists
+            states.append(s_t)
+            actions.append(a_t)
+            neg_actions.append(false_a_t)
+            samples.append(cur_sample)
+            i = i + 1
+
+        # Return data
+        return states, actions, neg_actions
+
+# Custom, vroom data loader
+class vroom_dataset(data_utils.Dataset):
+
+    # Initialization, almost teh same as for other data types
+    def __init__(self, opts, set_type=0, permute_color=False, datadir=''):
+
+        self.opts = opts
+        self.set_type = set_type
+        self.permute_color = permute_color
+
+        self.samples = []
+        files = os.listdir(datadir)
+        num_data = len(files)
+        if set_type == 0:
+            sample_list = files[:int(num_data * 0.9)]
+        else:
+            sample_list = files[int(num_data * 0.9):]
+
+        # Here's the difference - we're using gzipped pickle
+        # (additionally checking if teh file exists)
+        for file in sample_list:
+            path = f'{datadir}/{file}'
+            self.samples.append(path)
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+
+        # Load the sequence
+        with gzip.open(self.samples[idx], 'rb') as f:
+            data = pickle.load(f)
+
+        # Initialize data lists and calculate the episode length
+        states, actions, neg_actions = [], [], []
+        ep_len = len(data['observations']) - self.opts.num_steps
+
+        # Find sub-sequence start point
+        start_pt = random.randint(0, ep_len - 1)
+
+        i = 0
+        samples = []
+        cur_sample = 0
+
+        # Iterate over num_steps steps
+        while i < self.opts.num_steps:
+
+            # If current index exceedes number of steps - use last step
+            if start_pt + i >= len(data['observations']):
+                cur_s = data['observations'][len(data['observations']) - 1]
+                cur_a = data['actions'][len(data['observations']) - 1]
+            # Or given step otherwise
+            else:
+                cur_s = data['observations'][start_pt + i]
+                cur_a = data['actions'][start_pt + i]
+
+            # Channels last -> channels first, scale to -1..1, save as float32
+            s_t = (np.transpose(cur_s, axes=(2, 0, 1)) / 255.).astype('float32')
+            s_t = (s_t - 0.5) / 0.5
+
+            # Code sparse label as one-hot vector
+            a_t = np.eye(3)[cur_a].astype('float32')
+            action_idx = cur_a
+
+            # false action
+            false_a_idx = random.randint(0, 2)
+            while false_a_idx == action_idx:
+                false_a_idx = random.randint(0, 2)
+            false_a_t = np.zeros(a_t.shape).astype('float32')
+            false_a_t[false_a_idx] = 1
 
             # Add to the lists
             states.append(s_t)
