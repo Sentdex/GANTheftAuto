@@ -399,6 +399,10 @@ class Race:
         # Pre-slice the image - we do not need to rotate the whole image
         track_pre_slice = self.track_image[point[0] - 85:point[0] + 85, point[1] - 85:point[1] + 85]
 
+        # Make sure that we are not out out the track
+        if track_pre_slice.shape[0] < 170 or track_pre_slice.shape[1] < 170:
+            return None
+
         # Rotation matrix for the track image, centered on a car's point between back wheels
         # Progress needs to be converted to degrees for this
         rotation_matrix = cv2.getRotationMatrix2D((85, 85), 180 - direction * 360, 1.0)
@@ -777,7 +781,12 @@ if __name__ == '__main__':
         # Step environment
         image = race.step()
 
-        time.sleep(1 / race.fps)
+        # Car is near to the edge
+        if image is None:
+            print('Out of track')
+            exit()
+
+        #time.sleep(1 / race.fps)
 
         # Add frame to the counter
         frame += 1
