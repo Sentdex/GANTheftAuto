@@ -71,7 +71,7 @@ if __name__ == '__main__':
     PROFILES = (
         (50, 40, 15, 50, 50, 100),  # 0
         (100, 40, 50, 100, 150, 200),  # 1
-        (200, 20, 100, 150, 350, 300),  # 2
+        (200, 20, 100, 150, 250, 300),  # 2
     )
 
     # Will randomly draw from this set for each process
