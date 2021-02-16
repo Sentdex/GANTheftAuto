@@ -444,7 +444,7 @@ class Race:
     # Add a car to the track
     def set_car(self, car, reversed=False):
         self.car = car
-        self.car.set_position_and_rotation(self.track_points[0][2], (self.track_points[0][1] - (0.5 if reversed else 0)) % 1)
+        self.car.set_position_and_rotation(self.track_points[0 if not reversed else -1][2], (self.track_points[0][1] - (0.5 if reversed else 0)) % 1, 0 if not reversed else len(self.track_points) - 1)
 
     # Apply steering to a car (relays a control to the car's object)
     def apply_steering(self, throttle=0, steering=0):
@@ -491,9 +491,10 @@ class RaceCar:
 
     # Set a position and rotation (usually will be used to set it to match the first tracks'
     # point when car is placed on a track)
-    def set_position_and_rotation(self, position, rotation):
+    def set_position_and_rotation(self, position, rotation, starting_point_index):
         self.position = position
         self.rotation = rotation
+        self.starting_point_index = starting_point_index
 
     # Set current steering
     def apply_steering(self, throttle=0, steering=0):
@@ -576,7 +577,7 @@ class AI:
         self.car = car
         self.apply_offset()
         self.debug = debug
-        self.current_point_index = 0
+        self.current_point_index = car.starting_point_index
 
         self.original_road_points_array = self.make_road_points_array(self.race.track_points)
 
