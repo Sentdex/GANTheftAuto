@@ -610,7 +610,8 @@ class AI:
 
         # Lap finished flag
         new_lap = False
-        if closest_point_index < self.current_point_index and closest_point_index < 20:
+        if not reversed and closest_point_index < self.current_point_index and closest_point_index < 20 or \
+               reversed and closest_point_index > self.current_point_index and closest_point_index > len(self.track_points) - 20:
             new_lap = True
         self.current_point_index = closest_point_index
 
