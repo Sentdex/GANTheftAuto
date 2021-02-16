@@ -33,6 +33,7 @@ def setup(rank, world_size, seed):
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
     torch.manual_seed(seed)
 
+
 def train_gamegan(gpu, opts):
     torch.backends.cudnn.benchmark = True
 
@@ -56,7 +57,8 @@ def train_gamegan(gpu, opts):
         opts.gpu = gpu
         opts.log_dir = log_dir
         warm_up = opts.warm_up
-        start_epoch = saved_model['epoch']
+        start_epoch = saved_model['epoch'] + 1
+
         load_weights = True
 
     if opts.num_gpu > 1:
