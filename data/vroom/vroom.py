@@ -777,7 +777,7 @@ if __name__ == '__main__':
         # Step environment
         image = race.step()
 
-        #time.sleep(1 / race.fps)
+        time.sleep(1 / race.fps)
 
         # Add frame to the counter
         frame += 1
