@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 python3 main_parallel.py \
- --data cartpole:./data/cartpole/data \
+ --data vroom:./data/vroom/data \
  --log_dir ./results/ \
  --num_steps 32 \
  --warm_up 16 \
