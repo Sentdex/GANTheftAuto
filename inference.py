@@ -10,13 +10,13 @@ sys.path.append('..')
 import config
 import utils
 import random
-import torch.multiprocessing as mp
 sys.path.insert(0, './data')
 import dataloader
 import copy
 import cv2
 import numpy as np
-#import win32api
+import keyboard
+import time
 
 
 # Workaround for PyTorch issue on Windows
@@ -46,8 +46,14 @@ def inference(gpu, opts):
     curdata, datadir = opts.data.split(':')
     if curdata == 'cartpole':
         resized_image_size = (600, 400)
+        action_left = [1, 0]
+        action_right = [0, 1]
+        no_action = None
     elif curdata == 'vroom':
         resized_image_size = (256, 256)
+        action_left = [1, 0, 0]
+        action_right = [0, 0, 1]
+        no_action = [0, 1, 0]
     else:
         raise Exception(f'Not implemented: unknown data type: {curdata}')
 
@@ -79,65 +85,73 @@ def inference(gpu, opts):
     utils.toggle_grad(netG, False)
     netG.eval()
 
-    ##!! Temporary actions, replace with actual keys later
-    gen_actions = [torch.tensor([np.eye(opts.action_space)[random.randint(0, 1)]], dtype=torch.float32).cuda() for _ in range(1600)]
-
     # Disable warmup
     warm_up = 0
 
     # Temporary, to save predictions as videos
     #fourcc = cv2.VideoWriter_fourcc(*'MP4V')
-    #v = cv2.VideoWriter('video.mp4', fourcc, 30.0, (600,400))
-
-    # Run warmup to get initial values
-    # warmup is set to 0, so initial image is going to be used as input
-    prev_state, warm_up_state, M, prev_read_v, prev_alpha, outputs, maps, alphas, alpha_losses, zs, base_imgs_all, _, \
-        hiddens, init_maps = netG.run_warmup(zdist, states, actions, warm_up, train=False)
-    h, c = warm_up_state
-
-    # Show the image
-    img = prev_state[0].cpu().numpy()
-    img = np.rollaxis(img, 0, 3)
-    img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
-    cv2.imshow('test', img[...,::-1])
-    cv2.waitKey(1000)
-
-    # Uncomment to wite to the video stream
-    #for _ in range(30):
-    #    v.write((img*255).astype(np.uint8))
+    #v = cv2.VideoWriter('video.mp4', fourcc, 10.0, resized_image_size)
 
     action = None
-    torch.tensor([np.eye(opts.action_space)[random.randint(0, opts.action_space - 1)]], dtype=torch.float32).cuda()
+    prev_state = None
 
-    # Generate 160 frames
     i = 0
     while True:
 
-        '''
-        if win32api.GetAsyncKeyState(ord('A')):
-            action = torch.tensor([[1, 0]], dtype=torch.float32).cuda()
-        elif win32api.GetAsyncKeyState(ord('D')):
-            action = torch.tensor([[0, 1]], dtype=torch.float32).cuda()
-        elif action is None:
-            action = torch.tensor([np.eye(2)[random.randint(0, 1)]], dtype=torch.float32).cuda()
-        print(action)
-        '''
+        action_text = ''
+        if keyboard.is_pressed('r') or prev_state is None:
+            # Run warmup to get initial values
+            # warmup is set to 0, so initial image is going to be used as input
+            prev_state, warm_up_state, M, prev_read_v, prev_alpha, outputs, maps, alphas, alpha_losses, zs, base_imgs_all, _, \
+                hiddens, init_maps = netG.run_warmup(zdist, states, actions, warm_up, train=False)
+            h, c = warm_up_state
+
+            # Show the image
+            img = prev_state[0].cpu().numpy()
+            img = np.rollaxis(img, 0, 3)
+            img = ((img+1)*127.5).astype(np.uint8)
+            img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+            img = img[...,::-1]
+
+            cv2.imshow(f'{curdata} - inference', img)
+            cv2.waitKey(1000)
+
+            # Uncomment to wite to the video stream
+            #for _ in range(30):
+            #    v.write(img)
+
+            continue
+        elif keyboard.is_pressed('a'):
+            action = torch.tensor([action_left], dtype=torch.float32).cuda()
+            action_text = 'LEFT'
+        elif keyboard.is_pressed('d'):
+            action = torch.tensor([action_right], dtype=torch.float32).cuda()
+            action_text = 'RIGHT'
+        elif no_action is not None:
+            action = torch.tensor([no_action], dtype=torch.float32).cuda()
+        else:
+            action = torch.tensor([np.eye(opts.action_space)[random.randint(0, np.eye(opts.action_space) - 1)]], dtype=torch.float32).cuda()
+        #print(action, action_text)
 
         # Perform inference
-        prev_state, m, prev_alpha, alpha_loss, z, M, prev_read_v, h, c, init_map, base_imgs, _, cur_hidden = netG.run_step(prev_state, h, c, gen_actions[i], \
+        prev_state, m, prev_alpha, alpha_loss, z, M, prev_read_v, h, c, init_map, base_imgs, _, cur_hidden = netG.run_step(prev_state, h, c, action, \
                                                                               batch_size, prev_read_v, prev_alpha, M, zdist, step=i)
 
         # Show the image
         img = prev_state[0].cpu().numpy()
         img = np.rollaxis(img, 0, 3)
+        img = ((img+1)*127.5).astype(np.uint8)
         img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
-        cv2.imshow('test', img[...,::-1])
+        img = img[...,::-1]
+        cv2.imshow(f'{curdata} - inference', img)
         cv2.waitKey(1)
 
         i += 1
 
         # Uncomment to wite to the video stream
-        #v.write((img*255).astype(np.uint8))
+        #v.write(img)
+
+        time.sleep(0.1)
 
 
 if __name__ == '__main__':
