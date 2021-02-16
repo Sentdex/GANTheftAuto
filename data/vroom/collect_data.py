@@ -8,13 +8,13 @@ from tqdm import tqdm
 from vroom import Race, RaceCar, AI
 
 
-def play(steps_between_offset_change, max_offset, batch_id):
+def play(steps_between_offset_change, max_offset, c1, c2, c3, c4, reversed, uturns, frame_limit, batch_id):
 
     # create objects
     race = Race(fps=10)
     race.generate_track()
     car = RaceCar(speed=20, turn_radius=3)
-    race.set_car(car)
+    race.set_car(car, reversed=reversed)
     ai = AI(race, car)
 
     # Create image/action lists
@@ -22,10 +22,11 @@ def play(steps_between_offset_change, max_offset, batch_id):
     actions = []
 
     frame = 0
+    next_flip = np.random.randint(c3, c4)
     while True:
 
         # Step AI (make action)
-        action, new_lap = ai.step()
+        action, new_lap = ai.step(reversed=reversed)
 
         # Step environment
         image = race.step()
@@ -42,7 +43,13 @@ def play(steps_between_offset_change, max_offset, batch_id):
             new_offset = np.random.randint(max_offset * 2 + 1) - max_offset
             ai.apply_offset(new_offset)
 
-        if new_lap:
+        # Change driving direction randomly
+        if uturns and not frame % next_flip:
+            reversed = not reversed
+            next_flip = (np.random.randint(c1, c2) if reversed else np.random.randint(c3, c4))
+
+        # If lap finished or number of frames rached - break
+        if new_lap or frame > frame_limit:
             break
 
     # Create the data object
@@ -56,21 +63,30 @@ def play(steps_between_offset_change, max_offset, batch_id):
 if __name__ == '__main__':
 
     # Settings
-    SAMPLES = 10000  # How many sequences to collect
-    NO_PROCESSES = 10  # How many instances should play at once.
+    SAMPLES = 60000  # How many sequences to collect
+    NO_PROCESSES = 30  # How many instances should play at once.
 
     # Data to pass to the data collecting process
     # (frames between offset change, max offset from teh road center)
     PROFILES = (
-        (50, 40),  # 0
-        (100, 40),  # 1
-        (200, 20),  # 2
+        (50, 40, 15, 50, 50, 100),  # 0
+        (100, 40, 50, 100, 150, 200),  # 1
+        (200, 20, 100, 150, 350, 300),  # 2
     )
 
     # Will randomly draw from this set for each process
     # The more of one profile type, the more probably it'll be used
     # Whole set means the distribution in the training data
     PROFILE_LIST = (0, 0, 0, 1, 1, 2)
+
+    # A chance for car to drive the other way
+    REVERSE_CHANCE = 0.5
+
+    # A chance of car to make U-turns and circles in this sequence
+    UTURN_CHANCE = 0.5
+
+    # A total frame limit (it could drive very long with U-turns enabled)
+    FRAME_LIMIT = 3000
 
     # Data folder
     os.makedirs('data', exist_ok=True)
@@ -96,6 +112,13 @@ if __name__ == '__main__':
             p = multiprocessing.Process(target=play, kwargs={
                 'steps_between_offset_change': simulation_data[0],
                 'max_offset': simulation_data[1],
+                'c1': simulation_data[2],
+                'c2': simulation_data[3],
+                'c3': simulation_data[4],
+                'c4': simulation_data[5],
+                'reversed': np.random.random() < REVERSE_CHANCE,
+                'uturns': np.random.random() < UTURN_CHANCE,
+                'frame_limit': FRAME_LIMIT,
                 'batch_id': sample_ids[sample_ids_pointer],
             }, daemon=True)
             p.start()

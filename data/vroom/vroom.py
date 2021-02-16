@@ -438,9 +438,9 @@ class Race:
         return track_slice
 
     # Add a car to the track
-    def set_car(self, car):
+    def set_car(self, car, reversed=False):
         self.car = car
-        self.car.set_position_and_rotation(self.track_points[0][2], self.track_points[0][1])
+        self.car.set_position_and_rotation(self.track_points[0][2], (self.track_points[0][1] - (0.5 if reversed else 0)) % 1)
 
     # Apply steering to a car (relays a control to the car's object)
     def apply_steering(self, throttle=0, steering=0):
@@ -577,12 +577,12 @@ class AI:
         self.original_road_points_array = self.make_road_points_array(self.race.track_points)
 
     # Steps AI re-calculate current actions
-    def step(self, further_point=20, distance_multiplier=0.1, action_trigger_difference=0.05):
+    def step(self, reversed=False, further_point=20, distance_multiplier=0.1, action_trigger_difference=0.05):
 
         # Find closes road node to teh car
         closest_point_index, closest_point, _ = self.find_closest_road_node_to_car()
-        # Calculate which forward nodes to use (depending on a distance)
-        road_node_index = int(closest_point_index + np.round(further_point*distance_multiplier)) % len(self.track_points)
+        # Calculate which forward nodes to use (depending on a distance and direction)
+        road_node_index = int(closest_point_index + np.round(further_point*distance_multiplier) * (-1 if reversed else 1)) % len(self.track_points)
         # Calculate car to road node vector
         car_node_vector = Vector2D.from_points(self.track_points[road_node_index][2], self.car.position)
 
@@ -740,11 +740,14 @@ if __name__ == '__main__':
     #import win32api
     import time
 
+    reversed = True
+    next_flip = np.random.randint(50, 100)
+
     # create objects
     race = Race(fps=10, debug=True)
     race.generate_track()
     car = RaceCar(speed=20, turn_radius=3)
-    race.set_car(car)
+    race.set_car(car, reversed=reversed)
 
     # For AI
     ai = AI(race, car, debug=True)
@@ -769,12 +772,12 @@ if __name__ == '__main__':
         '''
         # -- or --
         # For AI - AI steering
-        action, new_lap = ai.step()
+        action, new_lap = ai.step(reversed=reversed)
 
         # Step environment
         image = race.step()
 
-        time.sleep(1 / race.fps)
+        #time.sleep(1 / race.fps)
 
         # Add frame to the counter
         frame += 1
@@ -783,3 +786,8 @@ if __name__ == '__main__':
         if not frame % 50:
             new_offset = np.random.randint(81) - 40
             ai.apply_offset(new_offset)
+
+        # Change driving direction randomly
+        if not frame % next_flip:
+            reversed = not reversed
+            next_flip = (np.random.randint(15, 50) if reversed else np.random.randint(50, 100))
