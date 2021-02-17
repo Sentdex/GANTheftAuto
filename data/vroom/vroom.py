@@ -278,7 +278,7 @@ class Race:
                 # If this is the first track point or we just reached some key point
                 # increment key point index and set a new destination
                 # (follow witha  track creation towards a ew point)
-                if destination_progress is None or current_progress > destination_progress:
+                if destination_progress is None or current_progress > destination_progress or current_position.distance(destination_point) < point_step:
                     destination_index += 1
                     destination_progress, destination_point = self.key_points[destination_index]
 
@@ -292,7 +292,7 @@ class Race:
                 direction_vector = progress_vector.rotate_left()
                 # A vector pointing from the current position of a track creation towards the next key point
                 destination_vector = Vector2D.from_points(destination_point, current_position)
-                # Remember the direction from teh previous loop
+                # Remember the direction from the previous loop
                 previous_direction = current_direction
 
                 # Get a destination vector projection on a progress vector - if the difference is above small margin
