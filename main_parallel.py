@@ -64,7 +64,7 @@ def train_gamegan(gpu, opts):
         start_epoch = saved_model['epoch'] + 1
 
         load_weights = True
-    print(opts.data);exit()
+
     if opts.num_gpu > 1:
         dist.init_process_group(
             backend='nccl',
