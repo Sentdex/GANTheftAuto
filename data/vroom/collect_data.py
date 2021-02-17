@@ -6,8 +6,9 @@ import pickle
 import gzip
 import math
 from tqdm import tqdm
-from vroom import Race, RaceCar, AI
+from vroom import Race, RaceCar, AI, VERSION as VROOM_VERSION
 
+VERSION = 1.05
 
 def debug(message, debug_log, console_lock, verbose=False):
 
@@ -94,6 +95,9 @@ def play(steps_between_offset_change, max_offset, c1, c2, c3, c4, reversed, utur
 
 
 if __name__ == '__main__':
+
+    print(f'Vroom version: {VROOM_VERSION}')
+    print(f'Collector version: {VERSION}')
 
     # Settings
     SAMPLES = 60000  # How many sequences to collect

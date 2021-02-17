@@ -6,6 +6,7 @@ import cv2
 
 PI = np.pi
 
+VERSION = 1.07
 
 # Converts radians to progress (0 to 1 float)
 def radians_to_progress(radians):
