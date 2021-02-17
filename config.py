@@ -23,7 +23,7 @@ def init_parser():
 
     parser.add_option('--saved_model', type=str, default=None)
     parser.add_option('--saved_optim', type=str, default=None)
-    parser.add_option('--data', action='store', type=str, default='pacman')
+    parser.add_option('--data', action='store', type=str, default=None)
     parser.add_option('--warm_up', action='store', type=int, default=10)
 
 
