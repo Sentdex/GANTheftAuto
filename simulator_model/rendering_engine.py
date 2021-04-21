@@ -50,30 +50,42 @@ from torch.nn import init
 # Attention is passed in in the format '32_64' to mean applying an attention
 # block at both resolution 32x32 and 64x64. Just '64' will apply at 64x64.
 def G_arch(ch=64, attention='64', ksize='333333', dilation='111111'):
-  arch = {}
-  arch[128] = {'in_channels' :  [ch * item for item in [16, 8, 4, 2]],
-               'out_channels' : [ch * item for item in [8, 4, 2, 1]],
-               'upsample' : [True] * 5,
-               'resolution' : [16, 32, 64, 128],
-               'attention' : {2**i: (2**i in [int(item) for item in attention.split('_')])
-                              for i in range(4,8)}}
-  arch[84] = {'in_channels': [ch * item for item in [16, 8, 4]],
-              'out_channels': [ch * item for item in [8, 4, 2]],
-              'upsample': [True] * 3,
-              'resolution': [16, 32, 64],
-              'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
-                            for i in range(4, 7)}}
-  arch[64] = {'in_channels': [ch * item for item in [16, 8, 4]],
-              'out_channels': [ch * item for item in [8, 4, 2]],
-              'upsample': [True] * 3,
-              'resolution': [16, 32, 64],
-              'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
-                            for i in range(4, 7)}}
+    arch = {}
+    arch['160x96'] = {'in_channels' :  [ch * item for item in [32, 16, 8, 4, 2, 2]],
+                      'out_channels' : [ch * item for item in [16, 8, 4, 2, 2, 2]],
+                      'upsample' : [2] * 4 + [1] * 2,
+                      'resolution' : [16, 32, 64, 128, 256, 512],
+                      'attention' : {res: (res in [int(item) for item in attention.split('_')])
+                                     for res in [16, 32, 64, 128, 256, 512]}}
+    arch['80x48'] = {'in_channels' :  [ch * item for item in [16, 8, 4, 2, 2]],
+                     'out_channels' : [ch * item for item in [8, 4, 2, 2, 2]],
+                     'upsample' : [2] * 3 + [1] * 2,
+                     'resolution' : [16, 32, 64, 128, 256],
+                     'attention' : {res: (res in [int(item) for item in attention.split('_')])
+                                    for res in [16, 32, 64, 128, 256]}}
+    arch['128x128'] = {'in_channels' :  [ch * item for item in [16, 8, 4, 2]],
+                       'out_channels' : [ch * item for item in [8, 4, 2, 1]],
+                       'upsample' : [True] * 5,
+                       'resolution' : [16, 32, 64, 128],
+                       'attention' : {2**i: (2**i in [int(item) for item in attention.split('_')])
+                                      for i in range(4, 8)}}
+    arch['84x84'] = {'in_channels': [ch * item for item in [16, 8, 4]],
+                     'out_channels': [ch * item for item in [8, 4, 2]],
+                     'upsample': [True] * 3,
+                     'resolution': [16, 32, 64],
+                     'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
+                                   for i in range(4, 7)}}
+    arch['64x64'] = {'in_channels': [ch * item for item in [16, 8, 4]],
+                     'out_channels': [ch * item for item in [8, 4, 2]],
+                     'upsample': [True] * 3,
+                     'resolution': [16, 32, 64],
+                     'attention': {2 ** i: (2 ** i in [int(item) for item in attention.split('_')])
+                                   for i in range(4, 7)}}
 
-  return arch
+    return arch
 
 class RenderingEngine(nn.Module):
-    def __init__(self, G_ch=64, dim_z=512, bottom_width=8, resolution=64,
+    def __init__(self, G_ch=64, dim_z=512, bottom_width=(8, 8), resolution=(64, 64),
                  G_kernel_size=3, G_attn='64', n_classes=1000,
                  num_G_SVs=1, num_G_SV_itrs=1,
                  G_shared=True, shared_dim=0, hier=False,
@@ -90,16 +102,17 @@ class RenderingEngine(nn.Module):
         # Dimensionality of the latent space
         self.dim_z = opts.hidden_dim if not opts.do_memory else opts.memory_dim
         # The initial spatial dimensions
-        if resolution == 84 or utils.check_arg(opts, 'simple_blocks'):
-            bottom_width = 7
-
+        if (resolution[0] == 96 and resolution[1] == 160) or (resolution[0] == 48 and resolution[1] == 80):
+            bottom_width = (6, 10)
+        elif resolution[0] == 84 or utils.check_arg(opts, 'simple_blocks'):
+            bottom_width = (7, 7)
         self.bottom_width = bottom_width
         # Resolution of the output
         self.resolution = resolution
         # Kernel size?
         self.kernel_size = G_kernel_size
         # Attention?
-        self.attention = G_attn
+        self.attention = '64_32' if (resolution[0] == 96 and resolution[1] == 160) or (resolution[0] == 48 and resolution[1] == 80) else G_attn
         # number of classes, for use in categorical conditional generation
         self.n_classes = n_classes
         # Use shared embeddings?
@@ -127,7 +140,7 @@ class RenderingEngine(nn.Module):
         # fp16?
         self.fp16 = G_fp16
         # Architecture dict
-        self.arch = G_arch(self.ch, self.attention)[resolution]
+        self.arch = G_arch(self.ch, self.attention)[f'{resolution[1]}x{resolution[0]}']
         self.opts = opts
 
         # If using hierarchical latents, adjust z
@@ -190,8 +203,8 @@ class RenderingEngine(nn.Module):
                 att_dim = self.opts.att_dim
 
                 self.get_map.append(nn.Sequential(
-                    nn.Linear(self.dim_z, (1 + att_dim) * (self.bottom_width ** 2)),
-                    View((-1, 1 + att_dim, self.bottom_width, self.bottom_width))
+                    nn.Linear(self.dim_z, (1 + att_dim) * (self.bottom_width[0] * self.bottom_width[1])),
+                    View((-1, 1 + att_dim, self.bottom_width[0], self.bottom_width[1]))
                 ))
                 if self.opts.spade_index > -1:
                     if self.opts.spade_index == 0:
@@ -204,23 +217,23 @@ class RenderingEngine(nn.Module):
                     self.linear.append(nn.Sequential(self.which_linear(in_dim,self.opts.fixed_v_dim)))
                 else:
                     self.linear.append(self.which_linear(in_dim,
-                                                         self.arch['in_channels'][0] * (self.bottom_width ** 2)))
+                                                         self.arch['in_channels'][0] * (self.bottom_width[0] * self.bottom_width[1])))
 
             else:
                 in_dim = self.dim_z
                 self.linear.append(self.which_linear(in_dim,
-                                                     self.arch['in_channels'][0] * (self.bottom_width ** 2)))
-
+                                                     self.arch['in_channels'][0] * (self.bottom_width[0] * self.bottom_width[1])))
+            
             # self.blocks is a doubly-nested list of modules, the outer loop intended
             # to be over blocks at a given resolution (resblocks and/or self-attention)
             # while the inner loop is over a given block
             self.blocks = []
             for index in range(len(self.arch['out_channels'])):
-                upsample_factor = 2
+                upsample_factor = 2 if type(self.arch['upsample'][index]) is bool else self.arch['upsample'][index]
                 if index == 0:
                     self.in_dim = self.arch['in_channels'][index] if (ind == 1 and self.free_dynamic_component) or (self.repeat < 2) else self.opts.fixed_v_dim
                     in_dim = self.in_dim
-                    if resolution == 84:
+                    if resolution[0] == 84:
                         upsample_factor = 3
                 else:
                     in_dim = self.arch['in_channels'][index]
@@ -320,7 +333,7 @@ class RenderingEngine(nn.Module):
             zs = z[0]
             bs = z[0].size(0)
             h = self.linear[0](zs)
-            h = h.view(h.size(0), -1, self.bottom_width, self.bottom_width)
+            h = h.view(h.size(0), -1, self.bottom_width[0], self.bottom_width[1])
             for index, blocklist in enumerate(self.all_blocks[0]):
                 for block in blocklist:
                     h = block(h)
@@ -358,10 +371,10 @@ class RenderingEngine(nn.Module):
                 if (not self.free_dynamic_component or ind == 0):
                     cur_v = cur_map * \
                         vs[ind].unsqueeze(-1).unsqueeze(-1).expand(bs, vs[ind].size(1),
-                                                                 self.bottom_width,
-                                                                 self.bottom_width)
+                                                                 self.bottom_width[0],
+                                                                 self.bottom_width[1])
                 else:
-                    cur_v = cur_map * vs[ind].view(bs, -1, self.bottom_width, self.bottom_width)
+                    cur_v = cur_map * vs[ind].view(bs, -1, self.bottom_width[0], self.bottom_width[1])
 
                 h, bind = cur_v, ind
                 for index, blocklist in enumerate(self.all_blocks[bind]):

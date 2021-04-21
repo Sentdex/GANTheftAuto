@@ -82,6 +82,46 @@ def choose_netG_encoder(basechannel=512, opts=None):
             nn.Linear((basechannel // 8) * 7 * 7, last_dim),
             nn.LeakyReLU(0.2),
         )
+    elif opts.img_size[0] == 96 and opts.img_size[1] == 160:
+        last_dim = basechannel
+        enc = nn.Sequential(
+            nn.Conv2d(opts.num_channel, basechannel // 16, 4, 1, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 16, basechannel // 8, 3, 2, 0),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 8, basechannel // 4, 3, 2, 0),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 4, basechannel // 2, 3, 2, 0),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 2, basechannel // 1, 3, 1, 0),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 1, basechannel // 4, 3, 1, 0),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 4, basechannel // 8, 3, 1, 0),
+            nn.LeakyReLU(0.2),
+            View((-1, (basechannel // 8) * 5 * 13)),
+            nn.Linear((basechannel // 8) * 5 * 13, last_dim),
+            nn.LeakyReLU(0.2),
+        )
+    elif opts.img_size[0] == 48 and opts.img_size[1] == 80:
+        last_dim = basechannel
+        enc = nn.Sequential(
+            nn.Conv2d(opts.num_channel, basechannel // 8, 4, 1, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 8, basechannel // 8, 3, 1, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 8, basechannel // 4, 3, 2, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 4, basechannel // 4, 3, 1, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 4, basechannel // 2, 3, 2, 1),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(basechannel // 2, basechannel // 8, 3, 2, 1),
+            nn.LeakyReLU(0.2),
+            View((-1, (basechannel // 8) * 6 * 10)),
+            nn.Linear((basechannel // 8) * 6 * 10, last_dim),
+            nn.LeakyReLU(0.2),
+        )
     else:
         assert 0, 'model-%s not supported'
 
@@ -92,13 +132,17 @@ def choose_netD_temporal(opts, conv3d_dim, window=[]):
     '''
     temporal discriminator
     '''
-    in_dim = opts.nfilterD * 16
+    in_dim = opts.nfilterD * 16 * (2 if opts.img_size[0] == 96 and opts.img_size[1] == 160 else 1)
     extractors, finals = [], []
 
     # temporarily hand-designed for steps 6 / 12 / 18
-    first_spatial_filter = 2
+    kernel_size = (2, 2, 2)
+    kernel_size2 = (3, 3, 3)
     if opts.img_size[0] == 84:
-        first_spatial_filter = 3
+        kernel_size = (2, 3, 3)
+    if (opts.img_size[0] == 96 and opts.img_size[1] == 160) or (opts.img_size[0] == 48 and opts.img_size[1] == 80):
+        kernel_size = (2, 2, 4)
+        kernel_size2 = (3, 2, 2)
     if utils.check_arg(opts, 'simple_blocks'):
         net1 = nn.Sequential(
             SN(nn.Conv3d(in_dim, conv3d_dim, (2, 2, 2), (1, 1, 1))),
@@ -135,9 +179,9 @@ def choose_netD_temporal(opts, conv3d_dim, window=[]):
             finals.append(head3)
     elif 'sn' in opts.D_temp_mode:
         net1 = nn.Sequential(
-            SN(nn.Conv3d(in_dim, conv3d_dim, (2, first_spatial_filter, first_spatial_filter), (1, 1, 1))),
+            SN(nn.Conv3d(in_dim, conv3d_dim, kernel_size, (1, 1, 1))),
             nn.LeakyReLU(0.2),
-            SN(nn.Conv3d(conv3d_dim, conv3d_dim * 2, (3, 3, 3), (2, 1, 1))),
+            SN(nn.Conv3d(conv3d_dim, conv3d_dim * 2, kernel_size2, (2, 1, 1))),
             nn.LeakyReLU(0.2)
         )
         head1 = nn.Sequential(

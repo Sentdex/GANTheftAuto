@@ -56,7 +56,7 @@ class DiscriminatorSingle(nn.Module):
     BigGAN discriminator architecture from
     https://github.com/ajbrock/BigGAN-PyTorch
     '''
-    def __init__(self, D_ch=64, D_wide=False, resolution=64,
+    def __init__(self, D_ch=64, D_wide=False, resolution=(64, 64),
                  D_kernel_size=3, D_attn='64', n_classes=1000,
                  num_D_SVs=1, num_D_SV_itrs=1, D_activation=nn.ReLU(inplace=False),
                  D_lr=2e-4, D_B1=0.0, D_B2=0.999, adam_eps=1e-8,
@@ -72,7 +72,7 @@ class DiscriminatorSingle(nn.Module):
         # Kernel size
         self.kernel_size = D_kernel_size
         # Attention?
-        self.attention = D_attn
+        self.attention = '64_32' if (resolution[0] == 96 and resolution[1] == 160) or (resolution[0] == 48 and resolution[1] == 80) else D_attn
         # Number of classes
         self.n_classes = n_classes
         # Activation
@@ -86,7 +86,7 @@ class DiscriminatorSingle(nn.Module):
         # Fp16?
         self.fp16 = D_fp16
         # Architecture
-        self.arch = self.D_arch(self.ch, self.attention)[resolution]
+        self.arch = self.D_arch(self.ch, self.attention)[f'{resolution[1]}x{resolution[0]}']
         self.opts = opts
         # Which convs, batchnorms, and linear layers to use
         # No option to turn off SN in D right now
@@ -131,24 +131,36 @@ class DiscriminatorSingle(nn.Module):
 
     def D_arch(self, ch=64, attention='64', ksize='333333', dilation='111111'):
         arch = {}
-        arch[128] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8, 8]],
-                     'out_channels': [item * ch for item in [1, 2, 4, 8, 8, 16]],
-                     'downsample': [True] * 5 + [False],
-                     'resolution': [64, 32, 16, 8, 4, 4],
-                     'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
-                                   for i in range(2, 8)}}
-        arch[84] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8]],
-                    'out_channels': [item * ch for item in [1, 2, 4, 8, 16]],
-                    'downsample': [True] * 4 + [False],
-                    'resolution': [32, 16, 8, 4, 4],
-                    'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
-                                  for i in range(2, 7)}}
-        arch[64] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8]],
-                    'out_channels': [item * ch for item in [1, 2, 4, 8, 16]],
-                    'downsample': [True] * 4 + [False],
-                    'resolution': [32, 16, 8, 4, 4],
-                    'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
-                                  for i in range(2, 7)}}
+        arch['160x96'] = {'in_channels': [3] + [ch * item for item in [1, 1, 2, 2, 4, 8, 16]],
+                          'out_channels': [item * ch for item in [1, 1, 2, 2, 4, 8, 16, 32]],
+                          'downsample': [False, True, False] * 1 + [True] * 4 + [False] * 1,
+                          'resolution': [64, 32, 16, 8, 4, 4, 4, 4, 4],
+                          'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                                        for i in range(2, 8)}}
+        arch['80x48'] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 4, 4, 8, 8]],
+                          'out_channels': [item * ch for item in [1, 2, 4, 4, 4, 8, 8, 16]],
+                          'downsample': [True] * 2 + [False] * 2 + [True] * 2 + [False] * 1 + [False] * 1,
+                          'resolution': [64, 32, 16, 8, 4, 4, 4, 4],
+                          'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                                        for i in range(2, 8)}}
+        arch['128x128'] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8, 8]],
+                           'out_channels': [item * ch for item in [1, 2, 4, 8, 8, 16]],
+                           'downsample': [True] * 5 + [False],
+                           'resolution': [64, 32, 16, 8, 4, 4],
+                           'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                                         for i in range(2, 8)}}
+        arch['84x84'] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8]],
+                         'out_channels': [item * ch for item in [1, 2, 4, 8, 16]],
+                         'downsample': [True] * 4 + [False],
+                         'resolution': [32, 16, 8, 4, 4],
+                         'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                                       for i in range(2, 7)}}
+        arch['64x64'] = {'in_channels': [3] + [ch * item for item in [1, 2, 4, 8]],
+                         'out_channels': [item * ch for item in [1, 2, 4, 8, 16]],
+                         'downsample': [True] * 4 + [False],
+                         'resolution': [32, 16, 8, 4, 4],
+                         'attention': {2 ** i: 2 ** i in [int(item) for item in attention.split('_')]
+                                       for i in range(2, 7)}}
         return arch
 
     # Initialize
@@ -201,7 +213,9 @@ class Discriminator(nn.Module):
         f_size = 4
         if self.opts.img_size[0] == 84:
             f_size = 5
-        elif self.simple_blocks:
+        elif (self.opts.img_size[0] == 96 and self.opts.img_size[1] == 160) or (self.opts.img_size[0] == 48 and self.opts.img_size[1] == 80):
+            f_size = (3, 5)
+        if self.simple_blocks:
             f_size = 3
             expand_dim=opts.nfilterD * 4
             if opts.img_size[0] == 128:
@@ -245,7 +259,7 @@ class Discriminator(nn.Module):
             conv3d_dim = self.opts.nfilterD_temp
         else:
             # bigGAN discriminator architecture
-            self.ds = DiscriminatorSingle(D_ch=opts.nfilterD, opts=opts, resolution=self.opts.img_size[0])
+            self.ds = DiscriminatorSingle(D_ch=opts.nfilterD, opts=opts, resolution=self.opts.img_size)
             conv3d_dim = self.opts.nfilterD_temp
 
         # temporal discriminator
@@ -266,7 +280,7 @@ class Discriminator(nn.Module):
                                               eps=1e-12)
 
         # action-conditioned discriminator
-        self.trans_conv = self.which_conv(opts.nfilterD*16*2, 256)
+        self.trans_conv = self.which_conv(opts.nfilterD*16*2 * (2 if opts.img_size[0] == 96 and opts.img_size[1] == 160 else 1), 256)
         self.action_linear1 = self.which_linear(512, 512)
         self.action_linear_out = self.which_linear(512, 1)
 

@@ -91,7 +91,7 @@ def init_parser():
     gan_param.add_option('--feature_loss_multiplier', action='store', type=float, default=10.0)
     gan_param.add_option('--reg_type',  type=str, default='real',
                          help='GP reg type')
-    gan_param.add_option('--img_size', action='store', type=int, default=64,
+    gan_param.add_option('--img_size', action='store', type=str, default='64',
                          help='# of iters for training netD')
     gan_param.add_option('--num_steps', action='store', type=int, default=15,
                          help='# of iters for training netD')

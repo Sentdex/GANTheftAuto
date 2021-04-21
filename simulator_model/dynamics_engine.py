@@ -157,7 +157,7 @@ class EngineGenerator(nn.Module):
         self.simple_enc = model_utils.choose_netG_encoder(basechannel=state_dim, opts=self.opts)
 
         # Rendering Engine
-        self.graphics_renderer = RenderingEngine(G_ch=opts.nfilterG, opts=opts, resolution=self.opts.img_size[0])
+        self.graphics_renderer = RenderingEngine(G_ch=opts.nfilterG, opts=opts, resolution=self.opts.img_size)
 
         self.num_components = self.opts.num_components
 
