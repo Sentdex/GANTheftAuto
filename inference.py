@@ -37,13 +37,15 @@ def inference(gpu, opts):
 
     log_dir = opts.log_dir
 
-    # Load teh model
+    # Load the model
     saved_model = torch.load(opts.saved_model, map_location='cpu')
     opts_data = opts.data
     opts = saved_model['opts']
-    if opts_data is not None:
+    if opts.data is None:
         opts.data = opts_data
     opts.gpu = gpu
+    if type(opts.img_size) == int:
+        opts.img_size = [opts.img_size] * 2
     opts.log_dir = log_dir
     warm_up = opts.warm_up
 
