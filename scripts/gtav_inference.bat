@@ -1,3 +1,3 @@
 python inference.py ^
- --saved_model ./results/model3.pt ^
+ --saved_model ./results/modelXX.pt ^
  --data gtav:./data/gtav/data

@@ -1,6 +1,7 @@
-python #!/usr/bin/env bash
+#!/usr/bin/env bash
 
-python3 --data gtav:./data/gtav/gtagan_1 \
+python3 main_parallel.py \
+ --data gtav:./data/gtav/gtagan_1 \
  --log_dir ./results/ \
  --num_steps 32 \
  --warm_up 16 \
