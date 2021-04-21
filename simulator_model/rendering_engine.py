@@ -157,10 +157,10 @@ class RenderingEngine(nn.Module):
         # Which convs, batchnorms, and linear layers to use
         if self.G_param == 'SN':
 
-            self.which_conv = functools.partial(layers.SNConv2d,
-                                                kernel_size=3, padding=1,
-                                                num_svs=num_G_SVs, num_itrs=num_G_SV_itrs,
-                                                eps=self.SN_eps)
+            #self.which_conv = functools.partial(layers.SNConv2d,
+            #                                    kernel_size=3, padding=1,
+            #                                    num_svs=num_G_SVs, num_itrs=num_G_SV_itrs,
+            #                                    eps=self.SN_eps)
             self.which_conv = functools.partial(layers.SNConv2d,
                                                 kernel_size=3, padding=1,
                                                 num_svs=num_G_SVs, num_itrs=num_G_SV_itrs,
