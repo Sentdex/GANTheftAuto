@@ -1,0 +1,2 @@
+GTA V data folder
+Defaults to the "data" folder inside this one

@@ -110,6 +110,11 @@ class Memory(nn.Module):
                     new_a[i][2] = 1.0
                     new_a[i][0] = 0.0
                     mask[i][0] = 1.0
+            elif 'gtav' in self.opts.data:
+                if action_label[i] == 0:
+                    new_a[i][2] = 1.0
+                    new_a[i][0] = 0.0
+                    mask[i][0] = 1.0
         mask = utils.check_gpu(self.opts.gpu, torch.FloatTensor(mask)).view(-1, 1, 1, 1)
         new_a = utils.check_gpu(self.opts.gpu, torch.FloatTensor(new_a))
 

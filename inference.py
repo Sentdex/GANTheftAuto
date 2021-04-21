@@ -58,6 +58,11 @@ def inference(gpu, opts):
         action_left = [1, 0, 0]
         action_right = [0, 0, 1]
         no_action = [0, 1, 0]
+    elif curdata == 'gtav':
+        resized_image_size = (320, 192)
+        action_left = [1, 0, 0]
+        action_right = [0, 0, 1]
+        no_action = [0, 1, 0]
     else:
         raise Exception(f'Not implemented: unknown data type: {curdata}')
 
@@ -97,6 +102,7 @@ def inference(gpu, opts):
     #v = cv2.VideoWriter('video.mp4', fourcc, 10.0, resized_image_size)
 
     action = None
+    hidden_action = 0
     prev_state = None
 
     i = 0
@@ -127,14 +133,18 @@ def inference(gpu, opts):
             continue
         elif keyboard.is_pressed('a'):
             action = torch.tensor([action_left], dtype=torch.float32).cuda()
-            action_text = 'LEFT'
+            hidden_action = -1
+            #action_text = 'LEFT'
         elif keyboard.is_pressed('d'):
             action = torch.tensor([action_right], dtype=torch.float32).cuda()
-            action_text = 'RIGHT'
+            hidden_action = 1
+            #action_text = 'RIGHT'
         elif no_action is not None:
             action = torch.tensor([no_action], dtype=torch.float32).cuda()
+            hidden_action = 0
         else:
             action = torch.tensor([np.eye(opts.action_space)[random.randint(0, np.eye(opts.action_space) - 1)]], dtype=torch.float32).cuda()
+            hidden_action = None
         #print(action, action_text)
 
         # Perform inference
@@ -147,7 +157,49 @@ def inference(gpu, opts):
         img = ((img+1)*127.5).astype(np.uint8)
         img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
         img = img[...,::-1]
+        rectangle = img.copy()
+        cv2.rectangle(rectangle, (0, 0), (150, 30), (0, 0, 0), -1)
+        img = cv2.addWeighted(rectangle, 0.6, img, 0.4, 0)
+        cv2.putText(img, "Action:", (8, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+        if hidden_action == -1:
+            color = (55, 155, 255)
+            text = "LEFT"
+        elif hidden_action == 1:
+            text = "RIGHT"
+            color = (55, 155, 255)
+        elif hidden_action == 0:
+            text = "STRAIGHT"
+            color = (55, 255, 55)
+        else:
+            text = "UNKNOWN"
+            color = (55, 55, 255)
+        cv2.putText(img, text, (80, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
         cv2.imshow(f'{curdata} - inference', img)
+        img = base_imgs[0][0].cpu().numpy()
+        img = np.rollaxis(img, 0, 3)
+        img = ((img+1)*127.5).astype(np.uint8)
+        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+        img = img[...,::-1]
+        cv2.imshow(f'{curdata} - masked 1', img)
+        img = base_imgs[1][0].cpu().numpy()
+        img = np.rollaxis(img, 0, 3)
+        img = ((img+1)*127.5).astype(np.uint8)
+        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+        img = img[...,::-1]
+        cv2.imshow(f'{curdata} - masked 2', img)
+        img = base_imgs[2][0].cpu().numpy()
+        img = np.rollaxis(img, 0, 3)
+        img = ((img+1)*127.5).astype(np.uint8)
+        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+        img = img[...,::-1]
+        cv2.imshow(f'{curdata} - unmasked 1', img)
+        img = base_imgs[3][0].cpu().numpy()
+        img = np.rollaxis(img, 0, 3)
+        img = ((img+1)*127.5).astype(np.uint8)
+        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+        img = img[...,::-1]
+        cv2.imshow(f'{curdata} - unmasked 2', img)
+
         cv2.waitKey(1)
 
         i += 1
