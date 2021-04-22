@@ -41,7 +41,7 @@ def inference(gpu, opts):
     saved_model = torch.load(opts.saved_model, map_location='cpu')
     opts_data = opts.data
     opts = saved_model['opts']
-    if opts.data is None:
+    if opts_data is not None:
         opts.data = opts_data
     opts.gpu = gpu
     if type(opts.img_size) == int:
