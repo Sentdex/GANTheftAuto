@@ -20,7 +20,6 @@ sys.path.insert(0, './data')
 import dataloader
 import copy
 
-
 # Workaround for PyTorch issue on Windows
 if os.name == 'nt':
     import ctypes
@@ -35,6 +34,14 @@ def setup(rank, world_size, seed):
 
 
 def train_gamegan(gpu, opts):
+
+    if opts.gpu_ids != '':
+        os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"]=opts.gpu_ids
+        opts.num_gpu = len(opts.gpu_ids.split(','))
+
+    print(opts.num_gpu);exit()
+
     torch.backends.cudnn.benchmark = True
 
     normalize = True

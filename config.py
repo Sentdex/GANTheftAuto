@@ -34,6 +34,8 @@ def init_parser():
             help='Whether to use GPU for training')
     train_param.add_option('--num_gpu', action='store', type=int, default=1,
                            help='Whether to use GPU for training')
+    train_param.add_option('--gpu_ids', type=str, default='',
+                           help='Comma-separated list of GPU ids to use')
 
     train_param.add_option('--optimizer', action='store', type='choice', default='adam',
             help='which optimizer used for training',
