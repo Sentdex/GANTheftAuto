@@ -96,7 +96,7 @@ class Trainer(object):
 
         if detach:
             target = target.detach()
-        loss = criterion(input, target, size_average=False) / target.size(0)
+        loss = criterion(input, target, reduction='sum') / target.size(0)
         return loss
 
     def generator_trainstep(self, states, actions, warm_up=10, train=True, epoch=0):
@@ -237,6 +237,8 @@ class Trainer(object):
             x_fake_.register_hook(utils.save_grad('gen_recon_input', grads))
 
             if self.opts.do_memory and self.opts.cycle_loss and epoch >= self.opts.cycle_start_epoch:
+
+                '''
                 # gradient from cycle loss only applied to dynamics engine and memory
                 (total_loss+cycle_loss).backward(retain_graph=True)
                 self.optG_temporal.step()
@@ -245,12 +247,55 @@ class Trainer(object):
                 self.optG_graphic.zero_grad()
                 total_loss.backward()
                 self.optG_graphic.step()
+                '''
+
+                # With Torch 1.5+ there is a fix to the checks in the autograd and above code yields an error:
+                ## RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation:
+                ## [torch.cuda.FloatTensor [512, 1536]], which is output 0 of TBackward, "is at version 2; expected version 1 instead".
+                ## Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).
+                # What this does mean is that once we step the optG_temporal, it updates parameters in-place and the total_loss.backward()
+                # cannot be computed anymore. Previously, the error did not get raised due to a bug.
+                # The fix that we are going to perform here is to calculate gradients of the (total_loss+cycle_loss),
+                # save them aside filtered by the parameters (leafs) optimized by the optG_temporal optimizer,
+                # zero gradients and calculate gradients for total_loss's backward step, then set the previously saved aside back
+                # and step both optimizers after all of this.
+                # Is there a better way to do it without rewriting a lot of the code here?
+
+                # gradient from cycle loss only applied to dynamics engine and memory
+                (total_loss+cycle_loss).backward(retain_graph=True)
+
+                # Save gradients aside
+                saved_grad_groups = []
+                for param_group in self.optG_temporal.param_groups:
+                    saved_grad_groups.append([])
+                    for params in param_group['params']:
+                        saved_grad_groups[-1].append(params.grad.clone())
+
+                # Zero gradients
+                self.optG_temporal.zero_grad()
+                self.optG_graphic.zero_grad()
+
+                # Calculate gradients from total_loss alone
+                total_loss.backward()
+
+                # Set the gradients of combined loss back
+                for param_group, saved_grads in zip(self.optG_temporal.param_groups, saved_grad_groups):
+                    for params, saved_grad in zip(param_group['params'], saved_grads):
+                        params.grad.detach()
+                        del params.grad
+                        params.grad = saved_grad
+
+                torch.cuda.empty_cache()
+
+                # Optimize
+                self.optG_temporal.step()
+                self.optG_graphic.step()
+
             else:
                 total_loss.backward()
                 self.optG_temporal.step()
                 if not self.opts.fix_graphic:
                     self.optG_graphic.step()
-
         return loss_dict, total_loss, gout, grads, None
 
     def discriminator_trainstep(self, states, actions, neg_actions, warm_up=10, gout=None, dout_fake=None,

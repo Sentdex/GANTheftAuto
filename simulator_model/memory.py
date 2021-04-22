@@ -151,7 +151,7 @@ class Memory(nn.Module):
             add_v = tmp[:, 1*self.opts.memory_dim:2*self.opts.memory_dim]
             other_v = tmp[:, 2*self.opts.memory_dim:]
 
-            erase_v = F.sigmoid(erase_v)
+            erase_v = torch.sigmoid(erase_v)
             M = self.write(erase_v, add_v, alpha, M)
 
         read_v, block_read_v = self.read(alpha, M)

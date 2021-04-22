@@ -357,9 +357,9 @@ class RenderingEngine(nn.Module):
                 maps.append(cur_map)
             maps = torch.cat(maps, dim=1)
             if self.opts.sigmoid_maps:
-                maps = F.sigmoid(maps / self.base_temperature)
+                maps = torch.sigmoid(maps / self.base_temperature)
             else:
-                maps = F.softmax(maps / self.base_temperature, dim=1)
+                maps = torch.softmax(maps / self.base_temperature, dim=1)
             maps = maps.split(1, dim=1)
 
             # conv transposed operations & attribute stage
