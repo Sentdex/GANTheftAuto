@@ -258,7 +258,7 @@ def train_gamegan(gpu, opts):
 
         save_epoch = opts.save_epoch
 
-        if epoch % save_epoch == 0 and epoch > save_epoch - 1 and logging:
+        if (epoch + 1) % save_epoch == 0 and epoch > save_epoch - 1 and logging:
             print('Saving checkpoint')
             utils.save_model(os.path.join(opts.log_dir, 'model' + str(epoch) + '.pt'), epoch, netG, netD, opts)
             utils.save_optim(os.path.join(opts.log_dir, 'optim' + str(epoch) + '.pt'), epoch, optG_temporal,
