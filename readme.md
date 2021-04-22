@@ -4,6 +4,8 @@ This is the fork of Nvidia's GameGAN repository, wich adds additional environmen
 
 Changes include bigger and non-square-shaped models - 160x96 and 80x48, new environments including GTA V, ability to choose GPU ids for training, inference script which was missing, and number of improvements and fixes.
 
+This fork is updated for and tested with Torch 1.8.
+
 ## Environment Setup
 - Clone the repository
 ```
