@@ -129,6 +129,8 @@ def inference(gpu, opts):
     i = 0
     while True:
 
+        frame_start_time = time.time()
+
         action_text = ''
         if keyboard.is_pressed('e'):
             exit()
@@ -236,7 +238,9 @@ def inference(gpu, opts):
         # Uncomment to wite to the video stream
         #v.write(img)
 
-        time.sleep(0.1)
+        wait = 1/30 - (time.time() - frame_start_time)
+        if wait > 0:
+            time.sleep(wait)
 
 
 if __name__ == '__main__':
