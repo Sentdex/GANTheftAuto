@@ -213,7 +213,7 @@ class RenderingEngine(nn.Module):
                         spade_in_chan = self.arch['in_channels'][self.opts.spade_index]
                     self.spade_layers.append(SPADE(spade_in_chan, att_dim))
 
-                if (ind == 1 and not self.free_dynamic_component) or (ind==0):
+                if (ind >= 1 and not self.free_dynamic_component) or (ind==0):
                     self.linear.append(nn.Sequential(self.which_linear(in_dim,self.opts.fixed_v_dim)))
                 else:
                     self.linear.append(self.which_linear(in_dim,
@@ -342,7 +342,7 @@ class RenderingEngine(nn.Module):
             return torch.tanh(self.output_layer[0](hs[0])), [], 0, [] ,[]
         else:
             # disentangling rendering engine
-            assert(self.opts.do_memory == True)
+            #assert(self.opts.do_memory == True)
             bs = z[0].size(0)
             vs, atts, maps = [], [], []
 
@@ -368,7 +368,7 @@ class RenderingEngine(nn.Module):
                 cur_map = maps[ind]
 
                 # put object vectors based on the map locations
-                if (not self.free_dynamic_component or ind == 0):
+                if (not self.free_dynamic_component or (self.opts.do_memory and ind == 0)):
                     cur_v = cur_map * \
                         vs[ind].unsqueeze(-1).unsqueeze(-1).expand(bs, vs[ind].size(1),
                                                                  self.bottom_width[0],
