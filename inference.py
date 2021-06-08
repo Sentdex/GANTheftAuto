@@ -41,6 +41,7 @@ def inference(gpu, opts):
     saved_model = torch.load(opts.saved_model, map_location='cpu')
     opts_data = opts.data
     opts_img = opts.inference_image_path
+    base_imgs = opts.show_base_images
     upsample_model = opts.upsample_model
     playback_fps = opts.playback_fps
     opts = saved_model['opts']
@@ -48,6 +49,7 @@ def inference(gpu, opts):
         opts.data = opts_data
     #if opts_img is not None:
     opts.inference_image_path = opts_img
+    opts.show_base_images = base_imgs
     opts.upsample_model = upsample_model
     opts.playback_fps = playback_fps
     opts.gpu = gpu
@@ -153,7 +155,14 @@ def inference(gpu, opts):
             cv2.imshow(f'{curdata} - inference', img)
             if upsample is not None:
                 upsampled_img = upsample.inference(np.rollaxis(prev_state[0].cpu().numpy(), 0, 3))
-                cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][...,::-1])
+                if type(upsampled_img) is np.ndarray:
+                    cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][...,::-1])
+                else:
+                    cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][0][...,::-1])
+                    if len(upsampled_img) > 1:
+                        cv2.imshow(f'{curdata} - upsampled aux1', upsampled_img[1][0][...,::-1])
+                    if len(upsampled_img) > 2:
+                        cv2.imshow(f'{curdata} - upsampled aux2', upsampled_img[2][0][...,::-1])
 
             cv2.waitKey(1000)
 
@@ -206,30 +215,34 @@ def inference(gpu, opts):
             color = (55, 55, 255)
         cv2.putText(img, text, (80, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
         cv2.imshow(f'{curdata} - inference', img)
-        img = base_imgs[0][0].cpu().numpy()
-        img = np.rollaxis(img, 0, 3)
-        img = ((img+1)*127.5).astype(np.uint8)
-        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
-        img = img[...,::-1]
-        cv2.imshow(f'{curdata} - masked 1', img)
-        img = base_imgs[1][0].cpu().numpy()
-        img = np.rollaxis(img, 0, 3)
-        img = ((img+1)*127.5).astype(np.uint8)
-        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
-        img = img[...,::-1]
-        cv2.imshow(f'{curdata} - masked 2', img)
-        img = base_imgs[2][0].cpu().numpy()
+
+        if opts.show_base_images == 'True' and opts.num_components > 1:
+            for i in range(opts.num_components * 2):
+                img = base_imgs[i][0].cpu().numpy()
+                img = np.rollaxis(img, 0, 3)
+                img = ((img+1)*127.5).astype(np.uint8)
+                img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
+                img = img[...,::-1]
+                cv2.imshow(f'{curdata} - {"un" if i > opts.num_components - 1 else ""}masked {(i % opts.num_components) + 1}', img)
+            for i in range(opts.num_components):
+                img = m[i][0].cpu().numpy()
+                img = np.rollaxis(img, 0, 3)
+                img = ((img+1)*127.5).astype(np.uint8)
+                img = np.expand_dims(cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST), -1)
+                img = img[...,::-1]
+                cv2.imshow(f'{curdata} - mask {i + 1}', img)
+
         if upsample is not None:
             upsampled_img = upsample.inference(np.rollaxis(prev_state[0].cpu().numpy(), 0, 3))
-            cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][...,::-1])
+            if type(upsampled_img) is np.ndarray:
+                cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][...,::-1])
+            else:
+                cv2.imshow(f'{curdata} - upsampled', upsampled_img[0][0][...,::-1])
+                if len(upsampled_img) > 1:
+                    cv2.imshow(f'{curdata} - upsampled aux1', upsampled_img[1][0][...,::-1])
+                if len(upsampled_img) > 2:
+                    cv2.imshow(f'{curdata} - upsampled aux2', upsampled_img[2][0][...,::-1])
 
-        cv2.imshow(f'{curdata} - unmasked 1', img)
-        img = base_imgs[3][0].cpu().numpy()
-        img = np.rollaxis(img, 0, 3)
-        img = ((img+1)*127.5).astype(np.uint8)
-        img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
-        img = img[...,::-1]
-        cv2.imshow(f'{curdata} - unmasked 2', img)
 
 
 
