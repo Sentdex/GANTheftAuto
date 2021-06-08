@@ -42,12 +42,14 @@ def inference(gpu, opts):
     opts_data = opts.data
     opts_img = opts.inference_image_path
     upsample_model = opts.upsample_model
+    playback_fps = opts.playback_fps
     opts = saved_model['opts']
     if opts_data is not None:
         opts.data = opts_data
     #if opts_img is not None:
     opts.inference_image_path = opts_img
     opts.upsample_model = upsample_model
+    opts.playback_fps = playback_fps
     opts.gpu = gpu
     if type(opts.img_size) == int:
         opts.img_size = [opts.img_size] * 2
@@ -238,7 +240,7 @@ def inference(gpu, opts):
         # Uncomment to wite to the video stream
         #v.write(img)
 
-        wait = 1/30 - (time.time() - frame_start_time)
+        wait = 1/opts.playback_fps - (time.time() - frame_start_time)
         if wait > 0:
             time.sleep(wait)
 

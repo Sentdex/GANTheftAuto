@@ -189,5 +189,6 @@ def init_parser():
 
     parser.add_option('--inference_image_path', type=str, default=None)
     parser.add_option('--upsample_model', default=None)
+    parser.add_option('--playback_fps', type=int, default=30)
 
     return parser
