@@ -36,11 +36,9 @@ def setup(rank, world_size, seed):
 def train_gamegan(gpu, opts):
 
     if opts.gpu_ids != '':
-        os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-        os.environ["CUDA_VISIBLE_DEVICES"]=opts.gpu_ids
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+        os.environ["CUDA_VISIBLE_DEVICES"] = opts.gpu_ids
         opts.num_gpu = len(opts.gpu_ids.split(','))
-
-    print(opts.num_gpu);exit()
 
     torch.backends.cudnn.benchmark = True
 
@@ -75,6 +73,8 @@ def train_gamegan(gpu, opts):
         load_weights = True
 
     if opts.num_gpu > 1:
+        os.environ['MASTER_ADDR'] = 'localhost'
+        os.environ['MASTER_PORT'] = '12355'
         dist.init_process_group(
             backend='nccl',
             init_method='env://',
