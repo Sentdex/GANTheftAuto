@@ -188,6 +188,7 @@ def init_parser():
     train_param.add_option('--min_lr', action='store', type=float, default=0.00001)
 
     parser.add_option('--inference_image_path', type=str, default=None)
+    parser.add_option('--show_base_images', default=False)
     parser.add_option('--upsample_model', default=None)
     parser.add_option('--playback_fps', type=int, default=30)
 
