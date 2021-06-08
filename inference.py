@@ -40,10 +40,13 @@ def inference(gpu, opts):
     # Load the model
     saved_model = torch.load(opts.saved_model, map_location='cpu')
     opts_data = opts.data
+    opts_img = opts.inference_image_path
     upsample_model = opts.upsample_model
     opts = saved_model['opts']
     if opts_data is not None:
         opts.data = opts_data
+    #if opts_img is not None:
+    opts.inference_image_path = opts_img
     opts.upsample_model = upsample_model
     opts.gpu = gpu
     if type(opts.img_size) == int:
@@ -85,14 +88,23 @@ def inference(gpu, opts):
     opts.bs = 1
     batch_size = opts.bs
 
-    # Load the dataset so we can get some initial image
-    ##!! Replace with some examle set-aside images
-    train_loader = dataloader.get_custom_dataset(opts, set_type=0, getLoader=True)
-    data_iters, train_len = [], 99999999999
-    data_iters.append(iter(train_loader))
-    if len(data_iters[-1]) < train_len:
-        train_len = len(data_iters[-1])
-    states, actions, neg_actions = utils.get_data(data_iters, opts)
+    if opts.inference_image_path is None:
+        # Load the dataset so we can get some initial image
+        ##!! Replace with some examle set-aside images
+        train_loader = dataloader.get_custom_dataset(opts, set_type=0, getLoader=True)
+        data_iters, train_len = [], 99999999999
+        data_iters.append(iter(train_loader))
+        if len(data_iters[-1]) < train_len:
+            train_len = len(data_iters[-1])
+        states, actions, _ = utils.get_data(data_iters, opts)
+    else:
+        # Load starting image
+        img = cv2.imread(opts.inference_image_path)[...,::-1]
+        img = (np.transpose(img, axes=(2, 0, 1)) / 255.).astype('float32')
+        img = (img - 0.5) / 0.5
+
+        states = [torch.tensor([img], dtype=torch.float32).cuda()]
+        actions = [torch.tensor(no_action if no_action is not None else action_left, dtype=torch.float32).cuda()]
 
     # Disable gradients, we'll perform just the inference
     utils.toggle_grad(netG, False)
