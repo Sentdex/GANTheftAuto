@@ -130,7 +130,9 @@ def inference(gpu, opts):
     while True:
 
         action_text = ''
-        if keyboard.is_pressed('r') or prev_state is None:
+        if keyboard.is_pressed('e'):
+            exit()
+        elif keyboard.is_pressed('r') or prev_state is None:
             # Run warmup to get initial values
             # warmup is set to 0, so initial image is going to be used as input
             prev_state, warm_up_state, M, prev_read_v, prev_alpha, outputs, maps, alphas, alpha_losses, zs, base_imgs_all, _, \
