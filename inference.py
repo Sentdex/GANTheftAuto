@@ -37,6 +37,15 @@ def inference(gpu, opts):
 
     log_dir = opts.log_dir
 
+    # Multi-part model?
+    if not os.path.exists(opts.saved_model):
+        part_list = sorted([file for file in os.listdir(os.path.dirname(opts.saved_model)) if os.path.basename(opts.saved_model) in file])
+        if len(part_list):
+            with open(opts.saved_model, 'wb') as sf:
+                for part in part_list:
+                    with open(os.path.dirname(opts.saved_model) + '/' + part, 'rb') as lf:
+                        sf.write(lf.read())
+
     # Load the model
     saved_model = torch.load(opts.saved_model, map_location='cpu')
     opts_data = opts.data
