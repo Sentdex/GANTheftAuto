@@ -21,7 +21,4 @@ python main_parallel.py ^
  --spade_index 2 ^
  --seed 1 ^
  --img_size 80x48 ^
- #--simple_blocks ^
- --action_space 3 #^
- #--saved_model ./results/model6.pt ^
- #--saved_optim ./results/optim176.pt
+ --action_space 3 ^
