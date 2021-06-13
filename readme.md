@@ -43,6 +43,7 @@ You can instantly run the demo:
 We are providing one of our trained models on GTA5 data as well as an 8x upsample model (part of a separate project). There's no GTA V running, this is the actual GAN output of a human playing within the GAN environment. 
 
 Example actual output of these demo models:
+
 ![GANTheftAuto - demo](_img/8x_upsampled_output.png)
 
 # Trainable demo
@@ -84,22 +85,24 @@ Currently, GTA V, Vroom and Cartpole are the only implemented data sources.
 
 ### GTA V environment
 
-This is an environment created using Grand Theft Auto V. We created own GTA5 mod accompanied by a Python script to collect the data. It contains simple AI (which we named DumbAI ;) ). We are pulling road nodes from the game and apply math transformations to create paths, then we are spawning multiple cars at the same time and alternate them to pull multiple streams at the same time (to speedup training). Game mod accepts steering commands from the Python script as well as limits the speed and sets other options like weather, traffic, etc. Python script analyzes current car position and nearest road nodes to drive using different paths to cover all possible actions and car positions as best as possible. This is important for further seamless experience with player "playing" the environment - it needs to output coherent and believable images.
+This is an environment created using Grand Theft Auto V. We created our own GTA5 mod accompanied by a Python script to collect the data. It contains a simple driving AI (which we named DumbAI ;) ). We are pulling road nodes from the game and apply math transformations to create paths, then we are spawning multiple cars at the same time and alternate them to pull multiple streams at the same time (to speedup training). Game mod accepts steering commands from the Python script as well as limits the speed and sets other options like weather, traffic, etc. Python script analyzes current car position and nearest road nodes to drive using different paths to cover all possible actions and car positions as best as possible. This is important for further seamless experience with player "playing" the environment - it needs to output coherent and believable images.
 
 Data collecting demo with visible road nodes (not included in the final training data):
 [![GANTheftAuto data collecting demo](https://img.youtube.com/vi/kV86KMNE-Ew/0.jpg)](https://www.youtube.com/watch?v=kV86KMNE-Ew)
 
 (click to watch on YouTube)
 
-As mentioned above, we can't share our data collecting scripts, but we are providing sample dataset. You can also create own dataset by recording frames and actions at 10 FPS. Save format is gzipped pickle file containing a dictionary of `'actions'` and `'observations'`. Actions are a single-dimensional NumPy array of `0` (left), `1` (straight) and `2` (right), while observations are a four-dimensional array where the first dimension are samples, and the other are `(48, 80, 3)` - RGB image size. Ungzip and unpickle example sample from the sample dataset to learn mode about the data structure. Each file should contain a single sequence of length of at least 32 frames.
+As mentioned above, we can't share our data collecting scripts, but we are providing sample dataset. If you believe you have a model that has interesting results, feel free to reach out and we may try to train it on the full dataset.
 
-Example train script is available at `scripts/gtav_multi.sh` (as well as it's `.bat` version).    
+You can also create your own dataset by recording frames and actions at 10 FPS. Save format is gzipped pickle file containing a dictionary of `'actions'` and `'observations'`. Actions are a single-dimensional NumPy array of `0` (left), `1` (straight) and `2` (right), while observations are a four-dimensional array where the first dimension are samples, and the other are `(48, 80, 3)` - RGB image size. Ungzip and unpickle example sample from the sample dataset to learn more about the data structure. Each file should contain a single sequence length of at least 32 frames.
+
+Example train script is available at `scripts/gtav_multi.sh` (as well as its `.bat` version).    
 
 ### Vroom environment
 
-Vroom is out own environment based on the OpenmAI Gym's Box2D, but does not require Gym to run. It's only dependencies are OpenCV and NumPy.
+Vroom is our own environment based on the OpenmAI Gym's Box2D CarRacing environment, but this one does not require Gym to run. Its only dependencies are OpenCV and NumPy.
 
-Example track with a slice that's actually what's saved as a training data:
+Example track with a slice of what's actually saved as a training data:
 
 ![GANTheftAuto - Vroom data](_img/every_50_steps_more_laps.png)
 
@@ -108,7 +111,7 @@ Example track with a slice that's actually what's saved as a training data:
 Example model output (we've never hunted for best possible output and switch to GTAV instead):
 ![GANTheftAuto - Vroom playing](_img/vroom.gif)
 
-We are including the data collecting script which is unattended - a simple AI (DumbAI) is playing the environment to collect the data. The car is "instructed" to follow the road, with additional constantly changing offset from the center of teh road, turns and u-turns to cover all possible scenarios.
+We are including the data collecting script - a simple AI (DumbAI) is playing the environment to collect the data. The car is "instructed" to follow the road, with additional constantly changing offset from the center of teh road, turns and u-turns to cover all possible scenarios.
 
 To run the data collector: 
 - Install dependencies
@@ -124,9 +127,9 @@ python3 collect_data.py
 
 ### NEAT-Cartpole
 
-This environment is created with OpenAI Gym's Cartpole. However data collecting part is unattended as we are first training the NEAT algoritm to play it, then collect data generated this way.
+This environment is created with OpenAI Gym's Cartpole. However, the data collecting part is unattended as we are first training the NEAT algoritm to play it, then collect data generated this way.
 
-Warning: recently we've discovered possible issue with this environment causing actions to alternate between a direction and no action. As for now we have no fix for this environment.
+Warning: recently we've discovered a possible issue with this environment causing actions to alternate between a direction and no action. As for now we have no fix for this environment, so your model results are highly likely to not be very useful. We'd recommend trying to build your own agent to play cartpole instead of a NEAT bot. 
 
 To run the data collector: 
 - Install dependencies
