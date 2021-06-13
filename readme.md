@@ -1,11 +1,12 @@
 # Description
 
-GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/gameGAN/), research focused on simulating dynamic environment, which we further pushed even past our imagination of what can be done with GameGAN.
+GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/gameGAN/), which is research focused on emulating dynamic game environments. The early research done with GameGAN was with games like Pacman, and we aimed to try to emulate one of the most complex environments in games to date with Grand Theft Auto 5.
 
-GANTheftAuto focuses mainly on the Grand Theft Auto 5 (GTA5) game, but contains other environments as well. In addition to the original project, we provide a set of improvements and fixes, with the most important being:
+
+GANTheftAuto focuses mainly on the Grand Theft Auto 5 (GTA5) game, but contains other environments as well. In addition to the original project, we provide a set of improvements and fixes, with the most important ones being:
 - ability to use the newest PyTorch version, which as of now is 1.8.1
-- ability to use non-squared images (16:8 in our case)
-- bigger generator and discriminator models
+- ability to use non-square images (16:8 in our case)
+- larger generator and discriminator models
 - ability to use more than 2 generators
 - inference script (which is absent in the GameGAN repository)
 - ability to use upsample model with inference
@@ -39,14 +40,14 @@ You can instantly run the demo:
    scripts\gtav_inference_demo.bat
    ```
 
-We are providing one of our trained models on GTA5 data as well as 8x upsample model (part of a separate project). There's no GRA V running, this is the actual GAN output of human "playing" the environment. 
+We are providing one of our trained models on GTA5 data as well as an 8x upsample model (part of a separate project). There's no GTA V running, this is the actual GAN output of a human playing within the GAN environment. 
 
 Example actual output of these demo models:
 ![GANTheftAuto - demo](_img/8x_upsampled_output.png)
 
 # Trainable demo
 
-Since we cannot share out data collecting script, which involves GTA5 mod and python code, we are sharing a sample dataset which you can use to train your model on. It;s included within `data/gtav/gtagan_2_sample` folder.
+Since we cannot share out data collecting script, which involves a GTA5 mod and python code, we are sharing a sample dataset which you can use to train your model on. It's included within the `data/gtav/gtagan_2_sample` folder.
 
 To train your own model, follow the steps above, but run a training script instead.
 
