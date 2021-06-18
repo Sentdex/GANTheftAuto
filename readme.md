@@ -24,7 +24,7 @@ GANTheftAuto output on the left, upscaled 4x for better visibility, and upsample
 You can instantly run the demo:
  - Download and unzip or clone this repository:
    ```
-   git clone https://github.com/Sentdex/GameGAN_code.git
+   git clone https://github.com/Sentdex/GANTheftAuto.git
    cd GameGAN_code
    ```
  - Install requirements
