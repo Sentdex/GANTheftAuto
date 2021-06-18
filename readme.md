@@ -2,7 +2,8 @@
 
 GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/gameGAN/), which is research focused on emulating dynamic game environments. The early research done with GameGAN was with games like Pacman, and we aimed to try to emulate one of the most complex environments in games to date with Grand Theft Auto 5.
 
-
+# Video
+(click to watch)
 [![GAN Theft Auto Video](https://img.youtube.com/vi/udPY5rQVoW0/0.jpg)](https://www.youtube.com/watch?v=udPY5rQVoW0)
 
 
