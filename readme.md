@@ -4,6 +4,7 @@ GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/game
 
 # Video
 (click to watch)
+
 [![GAN Theft Auto Video](https://img.youtube.com/vi/udPY5rQVoW0/0.jpg)](https://www.youtube.com/watch?v=udPY5rQVoW0)
 
 
