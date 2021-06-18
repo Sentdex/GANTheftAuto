@@ -3,6 +3,10 @@
 GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/gameGAN/), which is research focused on emulating dynamic game environments. The early research done with GameGAN was with games like Pacman, and we aimed to try to emulate one of the most complex environments in games to date with Grand Theft Auto 5.
 
 
+[![GAN Theft Auto Video](https://img.youtube.com/vi/udPY5rQVoW0/0.jpg)](https://www.youtube.com/watch?v=udPY5rQVoW0)
+
+
+
 GANTheftAuto focuses mainly on the Grand Theft Auto 5 (GTA5) game, but contains other environments as well. In addition to the original project, we provide a set of improvements and fixes, with the most important ones being:
 - ability to use the newest PyTorch version, which as of now is 1.8.1
 - ability to use non-square images (16:8 in our case)
