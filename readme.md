@@ -25,7 +25,7 @@ You can instantly run the demo:
  - Download and unzip or clone this repository:
    ```
    git clone https://github.com/Sentdex/GANTheftAuto.git
-   cd GameGAN_code
+   cd GANTheftAuto
    ```
  - Install requirements
    ```
@@ -71,8 +71,8 @@ Batch size in the demo scripts is currently set to `1`. If you have 16 GB of VRA
 ## Environment Setup
 - Download and unzip or clone the repository
 ```
-git clone https://github.com/Sentdex/GameGAN_code.git
-cd GameGAN_code
+git clone https://github.com/Sentdex/GANTheftAuto.git
+cd GANTheftAuto
 ```
 - Install dependencies
 ```
