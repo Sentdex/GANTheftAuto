@@ -18,12 +18,12 @@ import numpy as np
 import keyboard
 import time
 
-
+'''
 # Workaround for PyTorch issue on Windows
 if os.name == 'nt':
     import ctypes
     ctypes.cdll.LoadLibrary('caffe2_nvrtc.dll')
-
+'''
 
 def inference(gpu, opts):
 
@@ -88,7 +88,11 @@ def inference(gpu, opts):
 
     # Initialize torch
     torch.manual_seed(opts.seed)
-    torch.cuda.set_device(gpu)
+    
+    if torch.cuda.is_available():    
+        torch.cuda.set_device(gpu)
+    else:
+        raise Exception('CUDA is not available. Please check that you have an Nvidia CUDA GPU')
 
     # Create the generator model and load it;s state from the checkpoint
     netG, _ = utils.build_models(opts)
