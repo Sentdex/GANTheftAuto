@@ -1,6 +1,4 @@
-torch
 opencv-python
-torchvision
 tensorboardX
 opencv-python
 numpy
