@@ -34,6 +34,7 @@ You can instantly run the demo:
    cd GANTheftAuto
    ```
  - Install requirements
+   Install (the highest) CUDA version of PyTorch following instructions at [PyTorch's website](https://pytorch.org/) (there is no universal command to do so). ROCm and CPU versions are currently not supported by the project.
    ```
    pip3 install -r requirements.txt
    pip3 install tensorflow-gpu tensorflow_addons
@@ -77,14 +78,15 @@ Batch size in the demo scripts is currently set to `1`. If you have 16 GB of VRA
 
 ## Environment Setup
 - Download and unzip or clone the repository
-```
-git clone https://github.com/Sentdex/GANTheftAuto.git
-cd GANTheftAuto
-```
+  ```
+  git clone https://github.com/Sentdex/GANTheftAuto.git
+  cd GANTheftAuto
+  ```
 - Install dependencies
-```
-pip3 install -r requirements.txt
-```
+  Install (the highest) CUDA version of PyTorch following instructions at [PyTorch's website](https://pytorch.org/) (there is no universal command to do so). ROCm and CPU versions are currently not supported by the project.
+  ```
+  pip3 install -r requirements.txt
+  ```
 
 ## Dataset extraction
 
@@ -122,15 +124,15 @@ We are including the data collecting script - a simple AI (DumbAI) is playing th
 
 To run the data collector: 
 - Install dependencies
-```
-cd data/vroom
-pip3 install - requirements.txt
-```
+  ```
+  cd data/vroom
+  pip3 install - requirements.txt
+  ```
 - Edit `collect_data.py` if you need to change any defaults
 - Run the data extraction
-```
-python3 collect_data.py
-```
+  ```
+  python3 collect_data.py
+  ```
 
 ### NEAT-Cartpole
 
@@ -140,15 +142,15 @@ Warning: recently we've discovered a possible issue with this environment causin
 
 To run the data collector: 
 - Install dependencies
-```
-cd data/cartpole
-pip3 install - requirements.txt
-```
+  ```
+  cd data/cartpole
+  pip3 install - requirements.txt
+  ```
 - Edit `neat_cartpole.py` and update constants (at the bottom of the script) to your needs
 - Run the data extraction
-```
-python3 neat_cartpole.py
-```
+  ```
+  python3 neat_cartpole.py
+  ```
 
 
 ## Training
@@ -156,48 +158,48 @@ We provide training scripts in './scripts'.
 
 ### GTA V
 - For training the full GameGAN model, run:
-```
-./scripts/gtav_multi.sh
-```
+  ```
+  ./scripts/gtav_multi.sh
+  ```
 
 ### Vroom
 - For training the full GameGAN model, run:
-```
-./scripts/vroom_multi.sh
-```
+  ```
+  ./scripts/vroom_multi.sh
+  ```
 
 ### NEAT-Cartpole
 - For training the full GameGAN model, run:
-```
-./scripts/cartpole_multi.sh
-```
+  ```
+  ./scripts/cartpole_multi.sh
+  ```
 
 ## Monitoring
 - You can monitor the training process with tensorboard:
-```
-tensorboard --logdir=./results
-```
+  ```
+  tensorboard --logdir=./results
+  ```
 
 ## Inference
 Inference is currently unfinished - can be ran, but actions are randomly generated instead of taken from the user input. We'll finish it up shortly.
 
 ### Vroom
 Edit `scripts/gtav_inference.sh` and update the model filename, then run:
-```
-./scripts/gtav_inference.sh
-```
+  ```
+  ./scripts/gtav_inference.sh
+  ```
 
 ### Vroom
 Edit `scripts/cartpole_inference.sh` and update the model filename, then run:
-```
-./scripts/cartpole_inference.sh
-```
+  ```
+  ./scripts/cartpole_inference.sh
+  ```
 
 ### NEAT-Cartpole
 Edit `scripts/cartpole_inference.sh` and update the model filename, then run:
-```
-./scripts/cartpole_inference.sh
-```
+  ```
+  ./scripts/cartpole_inference.sh
+  ```
 
 
 ------
