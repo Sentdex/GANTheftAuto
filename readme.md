@@ -84,6 +84,7 @@ Batch size in the demo scripts is currently set to `1`. If you have 16 GB of VRA
   cd GANTheftAuto
   ```
 - Install dependencies
+  
   Install (the highest) CUDA version of PyTorch following instructions at [PyTorch's website](https://pytorch.org/) (there is no universal command to do so). ROCm and CPU versions are currently not supported by the project.
   ```
   pip3 install -r requirements.txt
