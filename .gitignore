@@ -24,3 +24,8 @@ data/gtav/gtagan_1/
 data/gtav/gtagan_test/
 
 \.idea/
+
+env/
+.env/
+venv/
+.venv/
