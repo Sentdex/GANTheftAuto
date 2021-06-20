@@ -1,4 +1,9 @@
 
+env/
+.env/
+venv/
+.venv/
+
 __pycache__/
 
 data/cartpole/data/

@@ -35,7 +35,7 @@ You can instantly run the demo:
    ```
  - Install requirements
    ```
-   pip3 install -r requirements.txt
+   pip3 install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
    pip3 install tensorflow-gpu tensorflow_addons
    ```
  - Run inference:
@@ -83,7 +83,7 @@ cd GANTheftAuto
 ```
 - Install dependencies
 ```
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 ## Dataset extraction
