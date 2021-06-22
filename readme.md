@@ -28,6 +28,9 @@ GANTheftAuto output on the left, upscaled 4x for better visibility, and upsample
 # Playable demo
 
 You can instantly run the demo:
+
+(you need a CUDA capable Nvidia GPU to run this demo)
+
  - Download and unzip or clone this repository:
    ```
    git clone https://github.com/Sentdex/GANTheftAuto.git
@@ -57,6 +60,8 @@ Example actual output of these demo models:
 
 # Trainable demo
 
+(you need a CUDA capable Nvidia GPU to run this demo)
+
 Since we cannot share out data collecting script, which involves a GTA5 mod and python code, we are sharing a sample dataset which you can use to train your model on. It's included within the `data/gtav/gtagan_2_sample` folder.
 
 To train your own model, follow the steps above, but run a training script instead.
@@ -76,6 +81,8 @@ Batch size in the demo scripts is currently set to `1`. If you have 16 GB of VRA
 
 
 # General
+
+(you need a CUDA capable Nvidia GPU to run this code, but we are open for contribution to make it running on AMD GPUs as well)
 
 ## Environment Setup
 - Download and unzip or clone the repository
