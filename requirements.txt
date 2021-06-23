@@ -1,5 +1,4 @@
 opencv-python
 tensorboardX
-opencv-python
 numpy
 keyboard
