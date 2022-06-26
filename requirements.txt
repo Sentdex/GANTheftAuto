@@ -2,3 +2,7 @@ opencv-python
 tensorboardX
 numpy
 keyboard
+flask
+flask-cors
+flask_restful
+torch
