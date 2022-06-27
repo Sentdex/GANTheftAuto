@@ -391,7 +391,7 @@ def step():
 @cross_origin()
 def health_check():
 
-    return json.dumps({}, cls=NpEncoder)
+    return json.dumps({})
 
 
 
