@@ -6,3 +6,5 @@ flask
 flask-cors
 flask_restful
 torch
+tensorflow
+tensorflow-addons
