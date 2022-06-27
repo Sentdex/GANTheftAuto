@@ -197,13 +197,6 @@ def apply_user_action(session_id, user_action):
         prev_state, warm_up_state, M, prev_read_v, prev_alpha, outputs, maps, alphas, alpha_losses, zs, base_imgs_all, _, \
             hiddens, init_maps = netG.run_warmup(zdist, states, actions, warm_up, train=False)
         h, c = warm_up_state
-        print('h', type(h), h, len(h))
-        print('c', type(c), c, len(c))
-        print('prev_read_v', type(prev_read_v), prev_read_v)
-        print('prev_alpha', type(prev_alpha), prev_alpha)
-        print('M', type(M), M)
-        print('warm_up_state', len(warm_up_state))
-        #b=1/0
 
         # Show the image
         img = prev_state[0].cpu().numpy()
@@ -262,16 +255,11 @@ def apply_user_action(session_id, user_action):
     else:
         action = torch.tensor([np.eye(opts.action_space)[random.randint(0, np.eye(opts.action_space) - 1)]], dtype=torch.float32).cuda()
         hidden_action = None
-    #print(action, action_text)
 
     # Perform inference
     prev_state, m, prev_alpha, alpha_loss, z, M, prev_read_v, h, c, init_map, base_imgs, _, cur_hidden = netG.run_step(prev_state, h, c, action, \
                                                                           batch_size, prev_read_v, prev_alpha, M, zdist, step=i)
 
-    print('prev_read_v', type(prev_read_v), prev_read_v)
-    print('prev_alpha', type(prev_alpha), prev_alpha)
-    print('m', type(m), m)
-    #b=1/0
     # Show the image
     img = prev_state[0].cpu().numpy()
     img = np.rollaxis(img, 0, 3)
@@ -306,14 +294,12 @@ def apply_user_action(session_id, user_action):
             img = ((img+1)*127.5).astype(np.uint8)
             img = cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST)
             img = img[...,::-1]
-#            cv2.imshow(f'{curdata} - {"un" if i > opts.num_components - 1 else ""}masked {(i % opts.num_components) + 1}', img)
         for i in range(opts.num_components):
             img = m[i][0].cpu().numpy()
             img = np.rollaxis(img, 0, 3)
             img = ((img+1)*127.5).astype(np.uint8)
             img = np.expand_dims(cv2.resize(img, resized_image_size, interpolation=cv2.INTER_NEAREST), -1)
             img = img[...,::-1]
-#            cv2.imshow(f'{curdata} - mask {i + 1}', img)
 
     upsampled_base64 = None
     if upsample is not None:
