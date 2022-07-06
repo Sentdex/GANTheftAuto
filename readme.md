@@ -7,7 +7,9 @@ GANTheftAuto is a fork of the Nvidia's [GameGAN](https://nv-tlabs.github.io/game
 
 [![GAN Theft Auto Video](https://img.youtube.com/vi/udPY5rQVoW0/0.jpg)](https://www.youtube.com/watch?v=udPY5rQVoW0)
 
+# Chrome Extension
 
+If you don't have a GPU, you can try the [Chrome Extension](https://chrome.google.com/webstore/detail/gan-theft-auto/cnoaklfmjhgfcopifkeelpfgcdappoli)
 
 GANTheftAuto focuses mainly on the Grand Theft Auto 5 (GTA5) game, but contains other environments as well. In addition to the original project, we provide a set of improvements and fixes, with the most important ones being:
 - ability to use the newest PyTorch version, which as of now is 1.8.1
@@ -24,6 +26,8 @@ The work is still in progress as we know that our results can be greatly improve
 
 GANTheftAuto output on the left, upscaled 4x for better visibility, and upsampled output (by a separate model) 
 
+# React Front End
+This [React App](https://github.com/supremepokebotking/GANTheftAutoViewerReact) works along with the inference_flask.py flask server. You can deploy your own server and use the React App as the front end.
 
 # Playable demo
 
